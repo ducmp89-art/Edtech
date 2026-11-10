@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>S-Note Pro 2026 | Hệ Thống Sổ Tay Điện Tử</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Tối ưu riêng cho Apple / Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="S-Note 2026">
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <style>
+        /* Tối ưu chiều cao thực cho Safari Mobile */
+        html, body { height: 100%; height: -webkit-fill-available; }
+        
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        .tab-btn.active { border-bottom: 2px solid #2563eb; color: #1d4ed8; font-weight: 700; }
+        .lesson-item.active { background-color: #dbeafe; color: #1e40af; font-weight: 600; border-left: 3px solid #2563eb; }
+        .katex { font-size: 1.08em; }
+        .markdown-body { font-size: 15px; }
+        @media (min-width: 768px) { .markdown-body { font-size: 16px; } }
+        .markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4 { font-weight: 700; color: #0f172a; margin-top: 1.25rem; margin-bottom: 0.5rem; }
+        .markdown-body h3 { font-size: 1.15rem; color: #1e3a8a; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.25rem; }
+        .markdown-body p { margin-bottom: 0.75rem; line-height: 1.7; color: #334155; }
+        .markdown-body ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 0.75rem; }
+        .markdown-body blockquote { border-left: 4px solid #f59e0b; background-color: #fffbeb; padding: 0.75rem 1rem; border-radius: 0 0.5rem 0.5rem 0; margin-bottom: 1rem; }
+        .katex-display { overflow-x: auto; overflow-y: hidden; padding-bottom: 5px; }
+        @media print { aside, header, #nav-tabs, .btn-action, #toast-container, #ai-tooltip, #mobile-menu-btn { display: none !important; } main { overflow: visible !important; height: auto !important; max-width: 100% !important; padding: 0 !important; } .exam-card { break-inside: avoid; border: none !important; box-shadow: none !important; margin-bottom: 2rem !important; } .bg-blue-50, .bg-amber-50, .bg-slate-50 { background-color: transparent !important; border: 1px solid #e2e8f0 !important; } body { background: white !important; color: black !important; } }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .toast-enter { animation: slideUp 0.3s ease-out forwards; }
+    </style>
+</head>
+<!-- Đã sửa: Dùng h-full để tương thích tuyệt đối với -webkit-fill-available trên iOS -->
+<body class="bg-slate-50 text-slate-800 h-full flex flex-col md:flex-row overflow-hidden relative">
+
+    <div id="mobile-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 z-40 hidden md:hidden transition-opacity"></div>
+
+    <aside id="sidebar" class="fixed md:relative top-0 left-0 w-[300px] md:w-[340px] md:min-w-[340px] md:max-w-[340px] bg-white border-r border-slate-200 flex flex-col h-full shrink-0 shadow-2xl md:shadow-sm z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+        <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 text-white w-9 h-9 rounded-lg flex items-center justify-center font-bold text-lg shadow">S</div>
+                <div>
+                    <h1 class="font-bold text-slate-900 leading-tight">S-Note 2026</h1>
+                    <p class="text-[10px] text-slate-400">Gia sư AI & Sổ tay GDPT</p>
+                </div>
+            </div>
+            <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-rose-500 p-2 text-xl"><i class="fa-solid fa-xmark"></i></button>
+            <span class="hidden md:inline-block bg-purple-50 text-purple-600 text-[10px] px-2 py-1 rounded-full font-bold border border-purple-200"><i class="fa-solid fa-rocket mr-1"></i>V21 Async</span>
+        </div>
+
+        <div class="p-3 border-b border-slate-100 bg-slate-50 space-y-2">
+            <div class="flex space-x-2">
+                <select id="filter-grade" onchange="applyFilter()" class="w-1/2 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-base font-semibold text-slate-700 outline-none focus:border-blue-500">
+                    <option value="10" selected>Lớp 10</option>
+                    <option value="8">Lớp 8</option>
+                </select>
+                <select id="filter-subject" onchange="applyFilter()" class="w-1/2 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-base font-semibold text-slate-700 outline-none focus:border-blue-500">
+                    <option value="MATH" selected>Toán học</option>
+                    <option value="PHY">Vật lý</option>
+                    <option value="LIT">Ngữ văn</option>
+                    <option value="ENG">Tiếng Anh</option>
+                </select>
+            </div>
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                <input type="text" id="search-input" onkeyup="applyFilter()" placeholder="Tìm kiếm bài học..." class="w-full bg-white border border-slate-200 rounded-lg pl-8 pr-3 py-1.5 text-base outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+            </div>
+
+            <div class="mt-3 pt-3 border-t border-slate-200/60 space-y-2">
+                <a href="exam.html" class="w-full bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 text-white font-black py-2.5 px-4 rounded-xl flex items-center justify-center space-x-2 shadow-[0_4px_15px_rgba(244,63,94,0.3)] transition-transform hover:scale-[1.02] active:scale-95 text-xs md:text-[13px] uppercase tracking-wide">
+                    <i class="fa-solid fa-gamepad text-lg animate-pulse"></i> Luyện Tập (EduMaster)
+                </a>
+                <a href="arena.html" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black py-2.5 px-4 rounded-xl flex items-center justify-center space-x-2 shadow-[0_4px_15px_rgba(79,70,229,0.3)] transition-transform hover:scale-[1.02] active:scale-95 text-xs md:text-[13px] uppercase tracking-wide">
+                    <i class="fa-solid fa-building-columns text-lg"></i> Thi Tập Trung (Arena)
+                </a>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-3 space-y-3" id="lesson-tree"></div>
+
+        <div class="p-3 border-t border-slate-100 bg-white text-xs text-slate-400 flex justify-between items-center">
+            <span id="data-count">Hệ thống đang quét Data...</span>
+            <span class="flex items-center space-x-1 text-emerald-600 font-medium"><i class="fa-solid fa-circle text-[8px] animate-pulse"></i> Auto-Sync</span>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full min-w-0 overflow-hidden bg-white relative w-full">
+        <header class="px-4 py-3 md:px-6 border-b border-slate-200 flex justify-between items-center bg-white shadow-xs shrink-0 w-full">
+            <div class="flex items-center space-x-3 overflow-hidden">
+                <button id="mobile-menu-btn" onclick="toggleSidebar()" class="md:hidden text-slate-600 hover:text-blue-600 text-xl p-1 shrink-0"><i class="fa-solid fa-bars"></i></button>
+                <div class="text-xs text-slate-500 truncate" id="lesson-breadcrumbs"><span>Chọn bài học</span></div>
+            </div>
+            <div class="flex items-center space-x-2 shrink-0">
+                <div class="flex items-center space-x-1.5 md:hidden">
+                    <a href="exam.html" class="bg-gradient-to-r from-rose-500 to-orange-500 text-white px-2.5 py-1.5 text-[10px] font-black rounded-lg shadow-md flex items-center space-x-1.5"><i class="fa-solid fa-gamepad"></i> Luyện Tập</a>
+                    <a href="arena.html" class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-2.5 py-1.5 text-[10px] font-black rounded-lg shadow-md flex items-center space-x-1.5"><i class="fa-solid fa-building-columns"></i> Arena</a>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto px-4 py-5 md:px-12 max-w-5xl w-full mx-auto" id="main-scroll-area">
+            <div class="mb-4">
+                <span id="lesson-badge" class="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold mb-2"></span>
+                <h2 class="text-xl md:text-3xl font-extrabold text-slate-900 leading-tight" id="lesson-title">Chào mừng bạn đến với S-Note 2026</h2>
+            </div>
+
+            <div class="flex border-b border-slate-200 mb-6 space-x-2 overflow-x-auto whitespace-nowrap scrollbar-hide pb-1" id="nav-tabs" style="display: none;">
+                <button onclick="switchTab('theory')" id="tab-theory-btn" class="tab-btn active px-3 md:px-4 py-2.5 text-xs md:text-sm text-slate-600 transition flex items-center space-x-2 shrink-0"><i class="fa-solid fa-book-open"></i> Lý thuyết</button>
+                <button onclick="switchTab('tips')" id="tab-tips-btn" class="tab-btn px-3 md:px-4 py-2.5 text-xs md:text-sm text-slate-600 transition flex items-center space-x-2 shrink-0"><i class="fa-solid fa-bolt text-amber-500"></i> Bí kíp</button>
+                <button onclick="switchTab('practice')" id="tab-practice-btn" class="tab-btn px-3 md:px-4 py-2.5 text-xs md:text-sm text-slate-600 transition flex items-center space-x-2 shrink-0"><i class="fa-solid fa-layer-group text-emerald-600"></i> Bài tập Mẫu</button>
+                <button onclick="switchTab('exam')" id="tab-exam-btn" class="tab-btn px-3 md:px-4 py-2.5 text-xs md:text-sm text-slate-600 transition flex items-center space-x-2 shrink-0"><i class="fa-solid fa-file-pen text-rose-500"></i> Bài tập Tổng hợp</button>
+            </div>
+
+            <div id="empty-state" class="text-center py-20 px-4">
+                <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto text-2xl mb-4 shadow-sm"><i class="fa-solid fa-rocket"></i></div>
+                <h3 class="text-lg font-bold text-slate-800">Bộ Khung Ultimate Đã Sẵn Sàng</h3>
+                <p class="text-xs text-slate-500 mt-2 md:hidden">Bấm nút Menu (☰) góc trái để chọn bài học.</p>
+                <p class="text-sm text-slate-500 mt-2 hidden md:block">Hãy tạo các file JSON/JS và bỏ vào thư mục tương ứng. Hệ thống sẽ tự động bắt dữ liệu.</p>
+            </div>
+
+            <div id="pane-theory" class="markdown-body bg-white border border-slate-200 rounded-2xl p-4 md:p-8 shadow-xs hidden selectable-pane"></div>
+            <div id="pane-tips" class="markdown-body bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 md:p-8 shadow-xs hidden selectable-pane"></div>
+            <div id="pane-practice" class="markdown-body bg-slate-50 border border-slate-200 rounded-2xl p-4 md:p-8 shadow-xs hidden selectable-pane"></div>
+            <div id="pane-exam" class="hidden space-y-6"></div>
+            <div class="h-12 w-full"></div> 
+        </div>
+    </main>
+
+    <button id="ai-tooltip" onclick="askAIFromSelection(this)" class="fixed z-50 hidden bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl rounded-full px-4 py-2 text-sm font-bold flex items-center space-x-2 transition cursor-pointer"><i class="fa-solid fa-sparkles text-amber-300"></i> Hỏi AI đoạn này</button>
+    <div id="toast-container" class="fixed bottom-6 right-4 md:right-6 z-50 flex flex-col space-y-3"></div>
+
+    <script>
+        // --- 1. GIAO DIỆN & HỆ THỐNG FALLBACK COPY CHO IOS 12 ---
+        function toggleSidebar() { const sidebar = document.getElementById('sidebar'); const overlay = document.getElementById('mobile-overlay'); if (sidebar.classList.contains('-translate-x-full')) { sidebar.classList.remove('-translate-x-full'); overlay.classList.remove('hidden'); } else { sidebar.classList.add('-translate-x-full'); overlay.classList.add('hidden'); } }
+        function showToast(message, type = 'success') { const container = document.getElementById('toast-container'); const toast = document.createElement('div'); const bgColor = type === 'success' ? 'bg-emerald-600' : 'bg-rose-600'; toast.className = `toast-enter ${bgColor} text-white px-4 md:px-5 py-3 rounded-xl shadow-lg text-xs md:text-sm font-semibold flex items-center space-x-3`; toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> ${message}`; container.appendChild(toast); setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(20px)'; setTimeout(() => toast.remove(), 300); }, 3000); }
+        
+        // HÀM FALLBACK COPY CHUẨN IOS 12 (Dùng execCommand thay vì navigator.clipboard)
+        function fallbackCopyTextToClipboard(text, onSuccess) {
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                if (onSuccess) onSuccess();
+            } catch (err) {
+                showToast("Trình duyệt từ chối Copy. Hãy bôi đen để copy thủ công.", "error");
+            }
+            textArea.remove();
+        }
+
+        // Tối ưu bắt sự kiện bôi đen cho cả iOS và Desktop
+        function handleTextSelection(e) {
+            const tooltip = document.getElementById('ai-tooltip'); 
+            if (tooltip.contains(e.target) || e.target.closest('#ai-tooltip')) return; 
+            
+            setTimeout(() => {
+                const selection = window.getSelection(); 
+                const text = selection.toString().trim(); 
+                const isInsideContent = e.target.closest('.selectable-pane'); 
+                
+                if (text.length > 5 && isInsideContent) { 
+                    try {
+                        const range = selection.getRangeAt(0); 
+                        const rect = range.getBoundingClientRect(); 
+                        let topPos = rect.top - 45; 
+                        if (topPos < 10) topPos = rect.bottom + 10; 
+                        tooltip.style.top = `${topPos}px`; 
+                        tooltip.style.left = `${Math.min(Math.max(rect.left + (rect.width / 2), 70), window.innerWidth - 70)}px`; 
+                        tooltip.style.transform = 'translateX(-50%)'; 
+                        tooltip.classList.remove('hidden'); 
+                        tooltip.setAttribute('data-text', text);
+                    } catch(err) {} 
+                } else if (!text) { 
+                    tooltip.classList.add('hidden'); 
+                }
+            }, 100);
+        }
+        document.addEventListener('mouseup', handleTextSelection);
+        document.addEventListener('touchend', handleTextSelection); // Bắt touch end cho iOS
+
+        document.getElementById('main-scroll-area').addEventListener('scroll', () => { document.getElementById('ai-tooltip').classList.add('hidden'); });
+        
+        function askAIFromSelection(btn) { 
+            const text = btn.getAttribute('data-text'); 
+            if(!text) return; 
+            const prompt = `Hãy đóng vai một gia sư xuất sắc. Giảng giải chi tiết, từng bước và dễ hiểu cho tôi đoạn kiến thức sau:\n\n"""\n${text}\n"""`; 
+            
+            const successCb = () => {
+                const originalHtml = btn.innerHTML; 
+                btn.innerHTML = `<i class="fa-solid fa-check"></i> Đã copy!`; 
+                btn.classList.replace('bg-indigo-600', 'bg-emerald-500'); 
+                showToast("Đã copy nội dung! Nhấn Ctrl+V để hỏi AI nhé.", "success"); 
+                setTimeout(() => { 
+                    btn.innerHTML = originalHtml; 
+                    btn.classList.replace('bg-emerald-500', 'bg-indigo-600'); 
+                    btn.classList.add('hidden'); 
+                    window.getSelection().removeAllRanges(); 
+                    window.open('https://chatgpt.com/', '_blank'); 
+                }, 1500);
+            };
+
+            // Dùng Fallback nếu API xịn không khả dụng
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(prompt).then(successCb).catch(() => fallbackCopyTextToClipboard(prompt, successCb));
+            } else {
+                fallbackCopyTextToClipboard(prompt, successCb);
+            }
+        }
+        
+        function askAITutor(btn) { 
+            let card = btn.closest('.exam-card'); 
+            if (!card) return; 
+            let clone = card.cloneNode(true); 
+            clone.querySelectorAll('[id^="sol-"]').forEach(s => s.remove()); 
+            clone.querySelectorAll('.btn-action').forEach(b => b.remove()); 
+            const prompt = `Hãy đóng vai gia sư xuất sắc. Giảng giải chi tiết bài toán/câu hỏi sau (phân tích tại sao đáp án khác sai nếu có):\n\n"""\n${clone.innerText.trim()}\n"""`; 
+            
+            const successCb = () => {
+                let originalHtml = btn.innerHTML; 
+                btn.innerHTML = `<i class="fa-solid fa-check"></i> Đã copy`; 
+                btn.classList.replace('bg-indigo-50', 'bg-emerald-500'); 
+                btn.classList.replace('text-indigo-700', 'text-white'); 
+                showToast("Đã copy đề bài! Mở ChatGPT để dán.", "success"); 
+                setTimeout(() => { 
+                    btn.innerHTML = originalHtml; 
+                    btn.classList.replace('bg-emerald-500', 'bg-indigo-50'); 
+                    btn.classList.replace('text-white', 'text-indigo-700'); 
+                    window.open('https://chatgpt.com/', '_blank'); 
+                }, 1500);
+            };
+
+            // Dùng Fallback nếu API xịn không khả dụng
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(prompt).then(successCb).catch(() => fallbackCopyTextToClipboard(prompt, successCb));
+            } else {
+                fallbackCopyTextToClipboard(prompt, successCb);
+            }
+        }
+
+        // --- 2. RENDER MARKDOWN & MATH ---
+        function renderMarkdownSafe(text) {
+            if (!text) return "";
+            text = text.replace(/\x0Bdots/g, '\\vdots').replace(/\x0Bec/g, '\\vec').replace(/\x0Crac/g, '\\frac').replace(/\x0Corall/g, '\\forall').replace(/\x09ext/g, '\\text').replace(/\x09riangle/g, '\\triangle').replace(/\x09an\b/g, '\\tan').replace(/\x08egin/g, '\\begin').replace(/\x08eta/g, '\\beta').replace(/\x08ar/g, '\\bar').replace(/\x0Dight/g, '\\right').replace(/\x0Dho/g, '\\rho').replace(/\x0Aeq/g, '\\neq').replace(/\x0Aotin/g, '\\notin').replace(/\x00/g, '\\0');             
+            const solBlocks = []; text = text.replace(/\[GIAI\]([\s\S]*?)\[\/GIAI\]/g, (match, innerContent) => { solBlocks.push(innerContent); return `\n\n@@SOL${solBlocks.length - 1}@@\n\n`; });
+            const quizBlocks = []; text = text.replace(/\[QUIZ\]([\s\S]*?)\[\/QUIZ\]/g, (match, innerContent) => { quizBlocks.push(innerContent); return `\n\n@@QUIZ${quizBlocks.length - 1}@@\n\n`; });
+            const mathBlocks = []; let tempText = text.replace(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g, (match) => { let mathContent = match.replace(/[\x0B\x0C\x08\x0D\x09]/g, ''); mathContent = mathContent.replace(/([a-zA-Z0-9])left\b/g, '$1\\left').replace(/([a-zA-Z0-9])right\b/g, '$1\\right').replace(/\{\\cases\}/g, '{cases}'); const keywords = ['mathbb', 'exists', 'forall', 'Delta', 'Rightarrow', 'Leftarrow', 'Leftrightarrow', 'rightarrow', 'leftarrow', 'le', 'ge', 'subset', 'cup', 'cap', 'setminus', 'emptyset', 'alpha', 'beta', 'gamma', 'pi', 'theta', 'infty', 'sin', 'cos', 'tan', 'cot', 'log', 'lim', 'sqrt', 'sum', 'prod', 'int', 'in', 'notin', 'vec', 'frac', 'text', 'triangle', 'overline', 'overrightarrow', 'perp', 'parallel', 'neq', 'approx', 'mid', 'cdot', 'times', 'div', 'quad', 'qquad', 'begin', 'end', 'circ', 'widehat', 'angle', 'sim', 'cong', 'equiv', 'wedge', 'left', 'right', 'bar', 'rho', 'vdots']; keywords.forEach(kw => { mathContent = mathContent.replace(new RegExp(`([^a-zA-Z\\\\])(${kw})\\b`, 'g'), '$1\\$2'); mathContent = mathContent.replace(new RegExp(`^(\\$+)(${kw})\\b`, 'g'), '$1\\$2'); }); mathContent = mathContent.replace(/(^|[^\\\\])\\\s/g, '$1\\\\ '); mathBlocks.push(mathContent); return `@@MATH${mathBlocks.length - 1}@@`; });
+            let html = marked.parse(tempText);
+            mathBlocks.forEach((block, i) => html = html.split(`@@MATH${i}@@`).join(block));
+            quizBlocks.forEach((block, i) => { let options = []; let optRegex = /\[(\*?)([A-Z])\]\s*([\s\S]*?)(?=\n\[\*?[A-Z]\]|$)/g; let m; while ((m = optRegex.exec(block)) !== null) options.push({ isCorrect: m[1] === '*', content: m[3].trim() }); let quizHtml = ''; if(options.length > 0) { for (let j = options.length - 1; j > 0; j--) { const k = Math.floor(Math.random() * (j + 1)); [options[j], options[k]] = [options[k], options[j]]; } let quizId = 'auto-quiz-' + Math.random().toString(36).substr(2, 9); let correctLetter = ''; let labels = ['A', 'B', 'C', 'D', 'E', 'F']; quizHtml = `<div class="mt-3 mb-6 space-y-2.5 font-sans" id="quiz-${quizId}">`; options.forEach((opt, idx) => { let label = labels[idx]; if (opt.isCorrect) correctLetter = label; let parsedOpt = renderMarkdownSafe(opt.content).replace(/^<p>/, '').replace(/<\/p>$/, ''); quizHtml += `<div onclick="checkQuiz('${quizId}', '${label}', 'CORRECT_PLACEHOLDER')" data-letter="${label}" class="quiz-option border border-slate-200 rounded-xl p-3 cursor-pointer hover:bg-blue-50 transition bg-white text-sm text-slate-700 flex items-start space-x-3 shadow-xs"><span class="font-bold text-slate-500 mt-0.5 bg-slate-100 w-6 h-6 flex items-center justify-center rounded-md shrink-0">${label}</span><div class="flex-1 markdown-body text-sm self-center">${parsedOpt}</div></div>`; }); quizHtml += `</div>`; quizHtml = quizHtml.replace(/CORRECT_PLACEHOLDER/g, correctLetter); } html = html.replace(new RegExp(`<p>@@QUIZ${i}@@</p>`, 'g'), `@@QUIZ${i}@@`); html = html.split(`@@QUIZ${i}@@`).join(quizHtml); });
+            solBlocks.forEach((block, i) => { let solId = 'auto-sol-' + Math.random().toString(36).substr(2, 9); let parsedInner = renderMarkdownSafe(block.trim()); let solHtml = `<div class="mt-2 mb-8 p-4 md:p-5 bg-slate-50/50 border border-slate-200 rounded-xl relative"><button onclick="toggleSolution('${solId}')" id="btn-${solId}" class="bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 px-4 py-1.5 rounded-lg text-xs md:text-sm font-semibold shadow-2xs transition flex items-center space-x-2 btn-action"><i class="fa-solid fa-eye text-emerald-600"></i> Xem lời giải</button><div id="sol-${solId}" class="hidden mt-4 pt-4 border-t border-slate-200 markdown-body">${parsedInner}</div></div>`; html = html.replace(new RegExp(`<p>@@SOL${i}@@</p>`, 'g'), `@@SOL${i}@@`); html = html.split(`@@SOL${i}@@`).join(solHtml); });
+            return html;
+        }
+
+        function checkQuiz(quizId, selectedLetter, correctLetter) { const quizContainer = document.getElementById(`quiz-${quizId}`); if (quizContainer.getAttribute('data-answered') === 'true') return; quizContainer.setAttribute('data-answered', 'true'); quizContainer.style.pointerEvents = 'none'; const options = quizContainer.querySelectorAll('.quiz-option'); options.forEach(opt => { const letter = opt.getAttribute('data-letter'); opt.classList.remove('hover:bg-blue-50', 'cursor-pointer', 'border-slate-200', 'shadow-xs'); const icon = document.createElement('i'); if (letter === correctLetter) { opt.classList.add('bg-emerald-50', 'border-emerald-400', 'text-emerald-800'); opt.querySelector('span').classList.replace('bg-slate-100', 'bg-emerald-200'); opt.querySelector('span').classList.replace('text-slate-500', 'text-emerald-800'); icon.className = 'fa-solid fa-circle-check text-emerald-500 text-lg ml-auto mt-0.5 shrink-0'; opt.appendChild(icon); } else if (letter === selectedLetter && selectedLetter !== correctLetter) { opt.classList.add('bg-rose-50', 'border-rose-400', 'text-rose-800'); opt.querySelector('span').classList.replace('bg-slate-100', 'bg-rose-200'); opt.querySelector('span').classList.replace('text-slate-500', 'text-rose-800'); icon.className = 'fa-solid fa-circle-xmark text-rose-500 text-lg ml-auto mt-0.5 shrink-0'; opt.appendChild(icon); } else { opt.classList.add('opacity-50', 'bg-slate-50'); } }); }
+        function toggleSolution(id) { const solDiv = document.getElementById(`sol-${id}`); const btn = document.getElementById(`btn-${id}`); if (solDiv.classList.contains('hidden')) { solDiv.classList.remove('hidden'); btn.innerHTML = '<i class="fa-solid fa-eye-slash text-rose-500"></i> Ẩn lời giải'; } else { solDiv.classList.add('hidden'); btn.innerHTML = '<i class="fa-solid fa-eye text-emerald-600"></i> Xem lời giải'; } }
+        function renderKaTeX() { renderMathInElement(document.body, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false }); }
+
+        // --- 3. ĐỘNG CƠ TẢI FILE ASYNC & KIỂM TRA BIẾN ---
+        window.MASTER_DB_GLOBAL = {};
+        window.MASTER_PRACTICE_GLOBAL = {};
+
+        async function bootSystem() {
+            const grades = ['10', '8'];
+            const subjects = ['toan', 'ly', 'van', 'anh'];
+            const maxChapter = 9;
+            const promises = [];
+
+            grades.forEach(grade => {
+                subjects.forEach(sub => {
+                    for(let i = 1; i <= maxChapter; i++) {
+                        promises.push(new Promise(resolve => {
+                            let s = document.createElement('script');
+                            s.src = `data/lop_${grade}/data_${sub}/${sub}${grade}_ch${i}.js`;
+                            s.onload = resolve; s.onerror = resolve; 
+                            document.body.appendChild(s);
+                        }));
+                        promises.push(new Promise(resolve => {
+                            let s = document.createElement('script');
+                            s.src = `data/lop_${grade}/data_${sub}/${sub}${grade}_practice_ch${i}.js`;
+                            s.onload = resolve; s.onerror = resolve;
+                            document.body.appendChild(s);
+                        }));
+                    }
+                });
+            });
+
+            await Promise.all(promises);
+
+            function safeGet(varName) { try { return eval(varName); } catch(e) { return {}; } }
+            function mergeSubject(prefix) { return Object.assign({}, safeGet(`${prefix}_CH1`), safeGet(`${prefix}_CH2`), safeGet(`${prefix}_CH3`), safeGet(`${prefix}_CH4`), safeGet(`${prefix}_CH5`), safeGet(`${prefix}_CH6`), safeGet(`${prefix}_CH7`), safeGet(`${prefix}_CH8`), safeGet(`${prefix}_CH9`)); }
+
+            window.MASTER_DB_GLOBAL = Object.assign({},
+                mergeSubject('DATA_TOAN10'), mergeSubject('DATA_LY10'), mergeSubject('DATA_VAN10'), mergeSubject('DATA_ANH10'),
+                mergeSubject('DATA_TOAN8'), mergeSubject('DATA_LY8'), mergeSubject('DATA_VAN8'), mergeSubject('DATA_ANH8')
+            );
+            window.MASTER_PRACTICE_GLOBAL = Object.assign({},
+                mergeSubject('DATA_PRACTICE_TOAN10'), mergeSubject('DATA_PRACTICE_LY10'), mergeSubject('DATA_PRACTICE_VAN10'), mergeSubject('DATA_PRACTICE_ANH10'),
+                mergeSubject('DATA_PRACTICE_TOAN8'), mergeSubject('DATA_PRACTICE_LY8'), mergeSubject('DATA_PRACTICE_VAN8'), mergeSubject('DATA_PRACTICE_ANH8')
+            );
+
+            applyFilter();
+        }
+
+        // --- 4. HIỂN THỊ MENU BÀI HỌC ---
+        let activeTab = 'theory';
+        let currentLessonId = null;
+
+        function applyFilter() {
+            const gradeFilter = document.getElementById('filter-grade').value;
+            const subjectFilter = document.getElementById('filter-subject').value;
+            const searchKeyword = document.getElementById('search-input').value.toLowerCase().trim();
+            const container = document.getElementById('lesson-tree');
+            
+            let matchedCount = 0;
+            const matchedLessons = Object.entries(window.MASTER_DB_GLOBAL).filter(([id, item]) => {
+                return (item.grade === gradeFilter) && (item.subject === subjectFilter) && 
+                       (searchKeyword === "" || item.title.toLowerCase().includes(searchKeyword) || (item.chapter && item.chapter.toLowerCase().includes(searchKeyword)));
+            });
+
+            const chapters = {};
+            matchedLessons.forEach(([id, item]) => { const chap = item.chapter || "Chuyên đề"; if (!chapters[chap]) chapters[chap] = []; chapters[chap].push([id, item]); matchedCount++; });
+
+            let html = '';
+            for (const [chapTitle, lessons] of Object.entries(chapters)) {
+                html += `<div class="border border-slate-200 rounded-xl bg-slate-50/60 overflow-hidden shadow-2xs mb-3"><div class="px-3 py-2 bg-slate-100/90 border-b border-slate-200 text-xs font-bold text-slate-700 flex items-center justify-between"><span class="truncate pr-1"><i class="fa-solid fa-folder-open text-blue-500 mr-1.5"></i> ${chapTitle}</span><span class="text-[10px] bg-white border border-slate-200 px-1.5 py-0.5 rounded text-slate-500 shrink-0">${lessons.length} bài</span></div><div class="p-1 space-y-0.5">`;
+                html += lessons.map(([id, item]) => { const isActive = (id === currentLessonId) ? 'active' : ''; return `<button onclick="selectLesson('${id}')" class="lesson-item ${isActive} w-full text-left px-2.5 py-2.5 md:py-2 rounded-lg text-[13px] md:text-xs text-slate-600 hover:bg-white transition flex items-center justify-between"><span class="truncate pr-2">${item.title}</span><i class="fa-solid fa-angle-right text-[10px] text-slate-300"></i></button>`; }).join('');
+                html += `</div></div>`;
+            }
+            container.innerHTML = html || '<div class="text-xs text-slate-400 text-center py-8">Chưa có dữ liệu cho phần này</div>';
+            document.getElementById('data-count').innerText = `${matchedCount} bài giảng khả dụng`;
+        }
+
+        function selectLesson(id) {
+            currentLessonId = id; const data = window.MASTER_DB_GLOBAL[id]; if (!data) return;
+            if (window.innerWidth < 768) { document.getElementById('sidebar').classList.add('-translate-x-full'); document.getElementById('mobile-overlay').classList.add('hidden'); }
+            document.getElementById('empty-state').classList.add('hidden'); document.getElementById('nav-tabs').style.display = 'flex';
+            document.getElementById('lesson-title').innerText = data.title;
+            const badge = document.getElementById('lesson-badge'); badge.className = `inline-block px-2.5 py-0.5 rounded-full text-[10px] md:text-xs font-bold mb-2 ${data.badgeClass || 'bg-blue-100 text-blue-700'}`; badge.innerText = `${data.subjectName} - Lớp ${data.grade}`;
+            document.getElementById('lesson-breadcrumbs').innerHTML = (data.breadcrumbs || [data.chapter, data.title]).join(' <i class="fa-solid fa-chevron-right text-[8px] mx-1 text-slate-300"></i> ');
+            document.getElementById('pane-theory').innerHTML = renderMarkdownSafe(data.theory || "_Đang cập nhật nội dung..._"); document.getElementById('pane-tips').innerHTML = renderMarkdownSafe(data.tips || "_Chưa có bí kíp cho phần này._"); document.getElementById('pane-practice').innerHTML = renderMarkdownSafe(data.practice || "_Chưa có bài tập mẫu cho phần này._");
+
+            let examHtml = ''; const chapterMatch = id.match(/-CH\d+-/); const chapterCode = chapterMatch ? chapterMatch[0] : null; let hasExercises = false;
+            if (chapterCode && window.MASTER_PRACTICE_GLOBAL) {
+                let index = 1;
+                for (const [pracId, pracData] of Object.entries(window.MASTER_PRACTICE_GLOBAL)) {
+                    if (pracId.includes(chapterCode) && pracId.startsWith(data.subject)) {
+                        hasExercises = true;
+                        // Đã sửa lỗi CSS vỡ nút: Bỏ space-x-2, thay bằng mr-2 mb-2 cho các button
+                        examHtml += `<div class="exam-card border border-slate-200 rounded-xl overflow-hidden shadow-2xs mb-6 bg-white"><div class="bg-blue-50/60 border-b border-blue-100 p-4"><div class="flex justify-between items-center mb-2"><span class="text-xs uppercase tracking-widest font-extrabold text-blue-700">Câu ${index}: ${pracData.topic}</span><span class="text-[9px] md:text-[10px] bg-white px-2 py-0.5 rounded text-blue-700 border border-blue-200 font-bold shadow-xs">${pracData.level}</span></div><div class="text-[15px] md:text-base font-medium leading-relaxed markdown-body text-slate-800">${renderMarkdownSafe(pracData.question)}</div></div><div class="bg-amber-50/60 border-b border-amber-100 p-3 text-xs md:text-sm text-slate-700 flex space-x-2 items-start"><i class="fa-solid fa-lightbulb text-amber-500 mt-1 shrink-0"></i><div><span class="font-bold text-amber-700">Gợi ý:</span> ${renderMarkdownSafe(pracData.hint)}</div></div><div class="p-4 md:p-5 bg-white relative"><div class="flex flex-wrap btn-action"><button onclick="toggleSolution('${pracId}')" id="btn-${pracId}" class="mr-2 mb-2 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 px-4 py-1.5 rounded-lg text-xs md:text-sm font-semibold shadow-2xs transition flex items-center space-x-2"><i class="fa-solid fa-eye text-emerald-600"></i> Xem lời giải</button><button onclick="askAITutor(this)" class="mr-2 mb-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 px-4 py-1.5 rounded-lg text-xs md:text-sm font-semibold shadow-2xs transition flex items-center space-x-2"><i class="fa-solid fa-robot text-indigo-500"></i> Hỏi AI</button></div><div id="sol-${pracId}" class="hidden mt-4 pt-4 border-t border-slate-100 markdown-body">${renderMarkdownSafe(pracData.solution)}</div></div></div>`;
+                        index++;
+                    }
+                }
+            }
+            if (!hasExercises) examHtml = '<div class="text-center py-12 text-slate-500 italic border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 text-sm">Chưa có bài tập cho phần này.</div>';
+            document.getElementById('pane-exam').innerHTML = examHtml; switchTab(activeTab); renderKaTeX();
+        }
+
+        function switchTab(tab) { activeTab = tab; ['theory', 'tips', 'practice', 'exam'].forEach(t => { const btn = document.getElementById(`tab-${t}-btn`); const pane = document.getElementById(`pane-${t}`); if (t === tab) { btn.classList.add('active'); pane.classList.remove('hidden'); } else { btn.classList.remove('active'); pane.classList.add('hidden'); } }); renderKaTeX(); }
+
+        // --- ĐỘNG CƠ THI TĨNH (S-NOTE MOCK EXAM ENGINE) ---
+        const MockExamEngine = {
+            questions: [],
+            timeLeft: 0,
+            timerInterval: null,
+            isSubmitted: false,
+
+            parseQuizzesFromText(rawText) {
+                const quizzes = [];
+                const regex = /\[QUIZ\]([\s\S]*?)\[\/QUIZ\]/g;
+                let match;
+                while ((match = regex.exec(rawText)) !== null) {
+                    const block = match[1];
+                    const lines = block.trim().split('\n');
+                    const qText = lines[0].trim(); 
+                    
+                    const options = [];
+                    const optRegex = /\[(\*?)([A-Z])\]\s*([\s\S]*?)(?=\n\[\*?[A-Z]\]|$)/g;
+                    let optMatch;
+                    while ((optMatch = optRegex.exec(block)) !== null) {
+                        options.push({
+                            isCorrect: optMatch[1] === '*',
+                            letter: optMatch[2],
+                            text: optMatch[3].trim()
+                        });
+                    }
+                    if(options.length > 0) quizzes.push({ q: qText, options: options, selectedIdx: -1 });
+                }
+                return quizzes;
+            },
+
+            start(timeMinutes, title, rawMarkdownData) {
+                this.questions = this.parseQuizzesFromText(rawMarkdownData);
+                if(this.questions.length === 0) {
+                    showToast("Không tìm thấy câu hỏi trắc nghiệm [QUIZ] nào trong bài học này!", "error");
+                    return;
+                }
+                
+                this.isSubmitted = false;
+                this.timeLeft = timeMinutes * 60;
+                document.getElementById('se-title').innerText = title;
+                document.getElementById('se-result-modal').classList.add('hidden');
+                document.getElementById('snote-exam-overlay').classList.remove('hidden');
+                document.getElementById('snote-exam-overlay').classList.add('flex');
+                
+                this.renderQuestions();
+                this.updateProgress();
+                
+                clearInterval(this.timerInterval);
+                this.updateTimerUI();
+                this.timerInterval = setInterval(() => {
+                    this.timeLeft--;
+                    this.updateTimerUI();
+                    if(this.timeLeft <= 0) this.forceSubmit();
+                }, 1000);
+            },
+
+            updateTimerUI() {
+                if(this.timeLeft < 0) return;
+                const m = String(Math.floor(this.timeLeft / 60)).padStart(2, '0');
+                const s = String(this.timeLeft % 60).padStart(2, '0');
+                document.getElementById('se-timer').innerText = `${m}:${s}`;
+            },
+
+            renderQuestions() {
+                const container = document.getElementById('se-question-list');
+                container.innerHTML = this.questions.map((q, qIdx) => `
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 question-block" id="se-q-${qIdx}">
+                        <h4 class="font-bold text-slate-800 text-[15px] mb-4 leading-relaxed"><span class="bg-slate-800 text-white px-2 py-0.5 rounded text-[10px] uppercase mr-2 shadow-sm">Câu ${qIdx + 1}</span> ${renderMarkdownSafe(q.q).replace(/<p>|<\/p>/g,'')}</h4>
+                        <div class="space-y-2.5">
+                            ${q.options.map((opt, oIdx) => `
+                                <div onclick="MockExamEngine.selectOption(${qIdx}, ${oIdx})" id="se-opt-${qIdx}-${oIdx}" class="exam-option border-2 border-slate-100 p-3 rounded-xl cursor-pointer hover:border-blue-300 hover:bg-blue-50/50 transition flex items-start space-x-3">
+                                    <div class="w-5 h-5 rounded-full border-2 border-slate-300 flex-shrink-0 mt-0.5 bg-white opt-radio"></div>
+                                    <div class="text-[13px] font-medium text-slate-700 markdown-body self-center">${renderMarkdownSafe(opt.text).replace(/<p>|<\/p>/g,'')}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div id="se-exp-${qIdx}" class="hidden mt-4 p-3 bg-emerald-50 text-emerald-800 text-xs font-bold rounded-xl border border-emerald-200">
+                            Đáp án chuẩn: ${(() => { const c = q.options.find(o => o.isCorrect); return c ? c.letter : ''; })()}
+                        </div>
+                    </div>
+                `).join('');
+                renderKaTeX();
+            },
+
+            selectOption(qIdx, oIdx) {
+                if (this.isSubmitted) return;
+                this.questions[qIdx].selectedIdx = oIdx;
+                
+                for (let i = 0; i < this.questions[qIdx].options.length; i++) {
+                    const optDiv = document.getElementById(`se-opt-${qIdx}-${i}`);
+                    optDiv.classList.remove('border-blue-500', 'bg-blue-50');
+                    optDiv.classList.add('border-slate-100');
+                    optDiv.querySelector('.opt-radio').classList.remove('border-blue-500', 'bg-blue-500');
+                    optDiv.querySelector('.opt-radio').classList.add('border-slate-300', 'bg-white');
+                }
+                const activeDiv = document.getElementById(`se-opt-${qIdx}-${oIdx}`);
+                activeDiv.classList.add('border-blue-500', 'bg-blue-50');
+                activeDiv.classList.remove('border-slate-100');
+                activeDiv.querySelector('.opt-radio').classList.add('border-blue-500', 'bg-blue-500');
+                activeDiv.querySelector('.opt-radio').classList.remove('border-slate-300', 'bg-white');
+
+                this.updateProgress();
+            },
+
+            updateProgress() {
+                const done = this.questions.filter(q => q.selectedIdx !== -1).length;
+                document.getElementById('se-progress').innerText = `${done} / ${this.questions.length} câu đã làm`;
+            },
+
+            forceSubmit() {
+                clearInterval(this.timerInterval);
+                this.isSubmitted = true;
+                
+                let correctCount = 0;
+                this.questions.forEach(q => {
+                    if(q.selectedIdx !== -1 && q.options[q.selectedIdx].isCorrect) correctCount++;
+                });
+
+                const score = (correctCount / this.questions.length) * 10;
+                
+                document.getElementById('se-score').innerText = score.toFixed(1);
+                document.getElementById('se-correct-count').innerText = correctCount;
+                document.getElementById('se-total-count').innerText = this.questions.length;
+                
+                document.getElementById('se-result-modal').classList.remove('hidden');
+                document.getElementById('se-result-modal').classList.add('flex');
+            },
+
+            reviewAnswers() {
+                document.getElementById('se-result-modal').classList.add('hidden');
+                
+                this.questions.forEach((q, qIdx) => {
+                    document.getElementById(`se-exp-${qIdx}`).classList.remove('hidden');
+                    
+                    q.options.forEach((opt, oIdx) => {
+                        const optDiv = document.getElementById(`se-opt-${qIdx}-${oIdx}`);
+                        optDiv.classList.remove('cursor-pointer', 'hover:border-blue-300', 'hover:bg-blue-50/50');
+                        
+                        if (opt.isCorrect) {
+                            optDiv.classList.add('border-emerald-500', 'bg-emerald-50');
+                            optDiv.classList.remove('border-slate-100', 'border-blue-500', 'bg-blue-50');
+                            optDiv.querySelector('.opt-radio').classList.add('border-emerald-500', 'bg-emerald-500');
+                        } else if (q.selectedIdx === oIdx && !opt.isCorrect) {
+                            optDiv.classList.add('border-rose-400', 'bg-rose-50');
+                            optDiv.classList.remove('border-slate-100', 'border-blue-500', 'bg-blue-50');
+                            optDiv.querySelector('.opt-radio').classList.add('border-rose-500', 'bg-rose-500');
+                        } else {
+                            optDiv.classList.add('opacity-50');
+                        }
+                    });
+                });
+            },
+
+            exit() {
+                clearInterval(this.timerInterval);
+                document.getElementById('snote-exam-overlay').classList.add('hidden');
+                document.getElementById('snote-exam-overlay').classList.remove('flex');
+            }
+        };
+
+        // Gọi khởi động
+        window.addEventListener('load', bootSystem);
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('Lỗi SW: ', err)); }); }
+    </script>
+    <!-- =======================================================
+         GIAO DIỆN THI TRẮC NGHIỆM TĨNH BÊN TRONG S-NOTE
+    ======================================================== -->
+    <div id="snote-exam-overlay" class="fixed inset-0 bg-slate-50/95 backdrop-blur-md z-[100] hidden flex-col h-screen overflow-hidden">
+        <!-- Header Đếm ngược -->
+        <header class="bg-white border-b border-slate-200 px-6 py-3 flex justify-between items-center shadow-sm shrink-0">
+            <div>
+                <h3 class="font-black text-slate-800 text-lg uppercase tracking-wide" id="se-title">Bài Thi Giữa Kỳ</h3>
+                <p class="text-xs text-slate-500 font-bold" id="se-progress">0 / 0 câu đã làm</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="bg-rose-50 border border-rose-200 text-rose-700 font-mono font-black text-xl px-4 py-1.5 rounded-xl shadow-inner flex items-center space-x-2">
+                    <i class="fa-solid fa-clock animate-pulse"></i> <span id="se-timer">00:00</span>
+                </div>
+                <button onclick="MockExamEngine.forceSubmit()" class="bg-slate-800 hover:bg-black text-white px-5 py-2 rounded-xl text-sm font-bold shadow-md transition active:scale-95">Nộp Bài</button>
+                <button onclick="MockExamEngine.exit()" class="text-slate-400 hover:text-rose-500 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold transition">✕</button>
+            </div>
+        </header>
+
+        <!-- Khu vực Câu hỏi -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8" id="se-scroll-area">
+            <div class="max-w-3xl mx-auto space-y-6" id="se-question-list">
+                <!-- Nội dung câu hỏi sinh ra tự động -->
+            </div>
+        </div>
+
+        <!-- Kết quả (Ẩn mặc định) -->
+        <div id="se-result-modal" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-[110] hidden items-center justify-center p-4">
+            <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl pop-in">
+                <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-4"><i class="fa-solid fa-check"></i></div>
+                <h2 class="text-2xl font-black text-slate-800 mb-2">Đã Nộp Bài!</h2>
+                <div class="bg-slate-50 rounded-2xl p-4 mb-6 border border-slate-100">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Điểm Số</p>
+                    <p class="text-5xl font-black text-blue-600 mb-2"><span id="se-score">0.0</span></p>
+                    <p class="text-sm font-semibold text-slate-600">Đúng <span id="se-correct-count" class="text-emerald-600 font-bold">0</span> / <span id="se-total-count">0</span> câu</p>
+                </div>
+                <button onclick="MockExamEngine.reviewAnswers()" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-md mb-2 transition active:scale-95">Xem Đáp Án Chi Tiết</button>
+                <button onclick="MockExamEngine.exit()" class="w-full bg-slate-100 text-slate-600 font-bold py-3.5 rounded-xl transition hover:bg-slate-200">Đóng Báo Cáo</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
