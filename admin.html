@@ -5,8 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>EduMaster Admin Pro | Trung Tâm Điều Hành Khảo Thí</title>
     
-    <!-- LIBRARIES -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 1. BẢN FALLBACK CHO IOS 12 (Gánh giao diện khi không nạp CDN v3) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    
+    <!-- 2. BẢN CHÍNH CDN CHO PC/ANDROID (Tải có điều kiện) -->
+    <script>
+        (function() {
+            var isOldIOS = /iP(ad|hone|od).+(OS 1[0-2]_|Version\/1[0-2])/i.test(navigator.userAgent);
+            
+            if (!isOldIOS) {
+                var twScript = document.createElement('script');
+                twScript.src = 'https://cdn.tailwindcss.com';
+                document.head.appendChild(twScript);
+                
+                var configScript = document.createElement('script');
+                configScript.innerHTML = "tailwind.config = { corePlugins: { preflight: false } };";
+                document.head.appendChild(configScript);
+            } else {
+                console.log("Kích hoạt chế độ Fallback cho Admin trên iOS cũ");
+            }
+        })();
+    </script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -46,7 +66,55 @@
     </script>
 
     <style>
-        * { font-family: 'Be Vietnam Pro', sans-serif !important; -webkit-font-smoothing: antialiased; }
+        /* ========================================================================= */
+        /* BỘ TỪ ĐIỂN FALLBACK CHO IOS 12 CỦA SẢNH ADMIN */
+        /* ========================================================================= */
+        .bg-slate-50 { background-color: #f8fafc !important; }
+        .bg-slate-100 { background-color: #f1f5f9 !important; }
+        .bg-slate-200 { background-color: #e2e8f0 !important; }
+        .bg-slate-800 { background-color: #1e293b !important; }
+        .bg-slate-900 { background-color: #0f172a !important; }
+        
+        .text-slate-300 { color: #cbd5e1 !important; }
+        .text-slate-400 { color: #94a3b8 !important; }
+        .text-slate-500 { color: #64748b !important; }
+        .text-slate-600 { color: #475569 !important; }
+        .text-slate-700 { color: #334155 !important; }
+        .text-slate-800 { color: #1e293b !important; }
+        
+        .border-slate-100 { border-color: #f1f5f9 !important; }
+        .border-slate-200 { border-color: #e2e8f0 !important; }
+        .border-slate-300 { border-color: #cbd5e1 !important; }
+        .border-slate-700 { border-color: #334155 !important; }
+        .border-slate-800 { border-color: #1e293b !important; }
+
+        /* Nền và viền trong suốt đặc thù */
+        .bg-slate-900\/80 { background-color: rgba(15, 23, 42, 0.8) !important; }
+        .bg-slate-950\/40 { background-color: rgba(2, 6, 23, 0.4) !important; }
+        .bg-slate-200\/80 { background-color: rgba(226, 232, 240, 0.8) !important; }
+        .bg-slate-50\/80 { background-color: rgba(248, 250, 252, 0.8) !important; }
+        .bg-amber-50\/70 { background-color: rgba(255, 251, 235, 0.7) !important; }
+        .bg-amber-50\/60 { background-color: rgba(255, 251, 235, 0.6) !important; }
+        .bg-rose-500\/20 { background-color: rgba(244, 63, 94, 0.2) !important; }
+        .bg-rose-900\/50 { background-color: rgba(136, 19, 55, 0.5) !important; }
+        .bg-blue-600\/30 { background-color: rgba(37, 99, 235, 0.3) !important; }
+        
+        .border-rose-500\/40 { border-color: rgba(244, 63, 94, 0.4) !important; }
+        .border-rose-800\/50 { border-color: rgba(159, 18, 57, 0.5) !important; }
+        .border-blue-400\/40 { border-color: rgba(96, 165, 250, 0.4) !important; }
+        .border-white\/10 { border-color: rgba(255, 255, 255, 0.1) !important; }
+
+        /* Các lớp cấu trúc tùy biến (Đã escape chuẩn) */
+        .z-\[100\] { z-index: 100 !important; }
+        .z-\[9999\] { z-index: 9999 !important; }
+        .text-\[10px\] { font-size: 10px !important; line-height: 14px !important; }
+        .text-\[11px\] { font-size: 11px !important; line-height: 16px !important; }
+        .text-\[13px\] { font-size: 13px !important; line-height: 18px !important; }
+        .h-\[calc\(100vh-250px\)\] { height: calc(100vh - 250px) !important; }
+        .max-h-\[92vh\] { max-height: 92vh !important; }
+        /* ========================================================================= */
+
+        * { font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important; -webkit-font-smoothing: antialiased; box-sizing: border-box; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -66,7 +134,7 @@
     <div id="admin-login-screen" class="fixed inset-0 bg-slate-900 z-[9999] flex items-center justify-center p-4 transition-opacity duration-300">
         <div class="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center relative overflow-hidden">
             <div class="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
-            <div class="w-16 h-16 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-2xl mx-auto flex items-center justify-center text-white text-3xl font-black mb-4 shadow-lg shadow-blue-500/30">⚡</div>
+            <div class="w-16 h-16 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-2xl mx-auto flex items-center justify-center text-white text-3xl font-black mb-4 shadow-lg">⚡</div>
             <h2 class="text-xl font-black text-slate-800 mb-1 uppercase tracking-wider">Hội Đồng Khảo Thí</h2>
             <p class="text-[11px] text-slate-500 font-bold mb-6 uppercase tracking-widest">Trung Tâm Điều Hành</p>
             
@@ -332,7 +400,7 @@
     </main>
 
     <!-- MODAL CHẤM THI VÀ PHÚC KHẢO -->
-    <div id="grading-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div id="grading-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200">
             <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
                 <div>
@@ -377,11 +445,16 @@
                 t.className = `flex items-center space-x-2 ${col} text-white px-4 py-3 rounded-xl shadow-lg border border-white/10 text-xs font-bold transition-all transform opacity-100 pointer-events-auto`;
                 t.innerHTML = `<span>${type === 'error' ? '⚠️' : (type === 'info' ? 'ℹ️' : '✅')}</span><span>${msg}</span>`;
                 c.appendChild(t);
-                t.animate([{ transform: 'translateY(-20px)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }], { duration: 250 });
-                setTimeout(() => {
-                    const a = t.animate([{ opacity: 1 }, { opacity: 0, transform: 'translateX(20px)' }], { duration: 250, fill: 'forwards' });
-                    a.onfinish = () => t.remove();
-                }, 3000);
+                
+                if (typeof t.animate === 'function') {
+                    t.animate([{ transform: 'translateY(-20px)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }], { duration: 250 });
+                    setTimeout(() => {
+                        const a = t.animate([{ opacity: 1 }, { opacity: 0, transform: 'translateX(20px)' }], { duration: 250, fill: 'forwards' });
+                        a.onfinish = () => t.remove();
+                    }, 3000);
+                } else {
+                    setTimeout(() => { t.remove(); }, 3000);
+                }
             },
             escapeHTML: (str) => {
                 if (!str) return "";
