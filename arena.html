@@ -9,25 +9,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Live Arena 2025 | Hệ Sinh Thái Khảo Thí</title>
     
-    <!-- LIBRARIES -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 1. BẢN FALLBACK CHO IOS 12 (Sẽ gánh giao diện khi không nạp CDN v3) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    
+    <!-- 2. BẢN CHÍNH CDN CHO PC/ANDROID HIỆN ĐẠI (Tải có điều kiện) -->
+    <script>
+        (function() {
+            // Kiểm tra thiết bị Apple chạy iOS/iPadOS 10, 11, 12
+            var isOldIOS = /iP(ad|hone|od).+(OS 1[0-2]_|Version\/1[0-2])/i.test(navigator.userAgent);
+            
+            if (!isOldIOS) {
+                // Chỉ nạp Tailwind v3 trên trình duyệt hiện đại
+                var twScript = document.createElement('script');
+                twScript.src = 'https://cdn.tailwindcss.com';
+                document.head.appendChild(twScript);
+                
+                var configScript = document.createElement('script');
+                configScript.innerHTML = "tailwind.config = { corePlugins: { preflight: false } };"; // Nhường quyền reset CSS cho bản v2
+                document.head.appendChild(configScript);
+            } else {
+                console.log("Kích hoạt chế độ Fallback cho thiết bị iOS cũ");
+            }
+        })();
+    </script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <!-- MATHJAX CÔNG THỨC TOÁN & HÓA -->
     <script>
         window.MathJax = {
-            tex: { 
-                inlineMath: [['$', '$'], ['\\(', '\\)']], 
-                displayMath: [['$$', '$$']], 
-                processEscapes: true, 
-                packages: {'[+]': ['mhchem']} 
-            }, 
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']], processEscapes: true, packages: {'[+]': ['mhchem']} }, 
             loader: { load: ['[tex]/mhchem'] }, 
-            svg: { 
-                fontCache: 'global', 
-                scale: 1, 
-                minScale: 0.5 
-            } 
+            svg: { fontCache: 'global', scale: 1, minScale: 0.5 } 
         };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
@@ -36,9 +49,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script>
-        const firebaseConfig = {
-            databaseURL: "https://edumaster-xxxx.firebaseio.com" 
-        };
+        const firebaseConfig = { databaseURL: "https://edumaster-xxxx.firebaseio.com" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
     </script>
@@ -65,26 +76,138 @@
     </script>
 
     <style>
+        /* ========================================================================= */
+        /* BỘ TỪ ĐIỂN FALLBACK CHO IOS 12 (Đã sửa lỗi dư dấu escape \) */
+        /* ========================================================================= */
+        
+        /* Bảng màu Slate */
+        .bg-slate-50 { background-color: #f8fafc !important; }
+        .bg-slate-100 { background-color: #f1f5f9 !important; }
+        .bg-slate-200 { background-color: #e2e8f0 !important; }
+        .bg-slate-800 { background-color: #1e293b !important; }
+        .bg-slate-900 { background-color: #0f172a !important; }
+        .bg-slate-950 { background-color: #020617 !important; }
+        
+        .text-slate-300 { color: #cbd5e1 !important; }
+        .text-slate-400 { color: #94a3b8 !important; }
+        .text-slate-500 { color: #64748b !important; }
+        .text-slate-600 { color: #475569 !important; }
+        .text-slate-700 { color: #334155 !important; }
+        .text-slate-800 { color: #1e293b !important; }
+        .text-slate-900 { color: #0f172a !important; }
+        
+        .border-slate-100 { border-color: #f1f5f9 !important; }
+        .border-slate-200 { border-color: #e2e8f0 !important; }
+        .border-slate-300 { border-color: #cbd5e1 !important; }
+        .border-slate-700 { border-color: #334155 !important; }
+
+        /* Nền trong suốt tự định nghĩa (Opacity Backgrounds) */
+        .bg-white\/10 { background-color: rgba(255, 255, 255, 0.1) !important; }
+        .bg-white\/20 { background-color: rgba(255, 255, 255, 0.2) !important; }
+        .bg-white\/30 { background-color: rgba(255, 255, 255, 0.3) !important; }
+        .bg-white\/40 { background-color: rgba(255, 255, 255, 0.4) !important; }
+        .bg-white\/50 { background-color: rgba(255, 255, 255, 0.5) !important; }
+        .bg-white\/60 { background-color: rgba(255, 255, 255, 0.6) !important; }
+        .bg-white\/70 { background-color: rgba(255, 255, 255, 0.7) !important; }
+        .bg-white\/80 { background-color: rgba(255, 255, 255, 0.8) !important; }
+        .bg-white\/90 { background-color: rgba(255, 255, 255, 0.9) !important; }
+
+        .bg-slate-900\/40 { background-color: rgba(15, 23, 42, 0.4) !important; }
+        .bg-slate-900\/50 { background-color: rgba(15, 23, 42, 0.5) !important; }
+        .bg-slate-900\/80 { background-color: rgba(15, 23, 42, 0.8) !important; }
+        .bg-slate-900\/90 { background-color: rgba(15, 23, 42, 0.9) !important; }
+        
+        .bg-slate-50\/50 { background-color: rgba(248, 250, 252, 0.5) !important; }
+        .bg-slate-50\/80 { background-color: rgba(248, 250, 252, 0.8) !important; }
+        .bg-slate-100\/50 { background-color: rgba(241, 245, 249, 0.5) !important; }
+        
+        .bg-blue-50\/50 { background-color: rgba(239, 246, 255, 0.5) !important; }
+        .bg-blue-50\/80 { background-color: rgba(239, 246, 255, 0.8) !important; }
+        .bg-blue-500\/30 { background-color: rgba(59, 130, 246, 0.3) !important; }
+
+        .bg-amber-50\/60 { background-color: rgba(255, 251, 235, 0.6) !important; }
+        .bg-amber-50\/70 { background-color: rgba(255, 251, 235, 0.7) !important; }
+        .bg-amber-50\/80 { background-color: rgba(255, 251, 235, 0.8) !important; }
+        
+        .bg-rose-500\/10 { background-color: rgba(244, 63, 94, 0.1) !important; }
+        .bg-rose-500\/20 { background-color: rgba(244, 63, 94, 0.2) !important; }
+        
+        .bg-indigo-500\/20 { background-color: rgba(99, 102, 241, 0.2) !important; }
+        .bg-indigo-500\/30 { background-color: rgba(99, 102, 241, 0.3) !important; }
+
+        .bg-emerald-500\/50 { background-color: rgba(16, 185, 129, 0.5) !important; }
+
+        /* Viền trong suốt tự định nghĩa */
+        .border-white\/20 { border-color: rgba(255, 255, 255, 0.2) !important; }
+        .border-white\/30 { border-color: rgba(255, 255, 255, 0.3) !important; }
+        .border-slate-200\/60 { border-color: rgba(226, 232, 240, 0.6) !important; }
+        .border-slate-200\/80 { border-color: rgba(226, 232, 240, 0.8) !important; }
+        .border-rose-500\/20 { border-color: rgba(244, 63, 94, 0.2) !important; }
+        .border-rose-500\/30 { border-color: rgba(244, 63, 94, 0.3) !important; }
+        .border-indigo-500\/30 { border-color: rgba(99, 102, 241, 0.3) !important; }
+        .border-amber-200\/60 { border-color: rgba(253, 230, 138, 0.6) !important; }
+        .border-emerald-500\/50 { border-color: rgba(16, 185, 129, 0.5) !important; }
+
+        /* Kích thước chữ tuỳ chỉnh */
+        .text-\[8px\] { font-size: 8px !important; line-height: 12px !important; }
+        .text-\[9px\] { font-size: 9px !important; line-height: 14px !important; }
+        .text-\[10px\] { font-size: 10px !important; line-height: 14px !important; }
+        .text-\[11px\] { font-size: 11px !important; line-height: 16px !important; }
+        .text-\[12px\] { font-size: 12px !important; line-height: 16px !important; }
+        .text-\[13px\] { font-size: 13px !important; line-height: 18px !important; }
+        .text-\[14px\] { font-size: 14px !important; line-height: 20px !important; }
+        .text-\[15px\] { font-size: 15px !important; line-height: 22px !important; }
+
+        /* Kích thước và toạ độ tuỳ chỉnh */
+        .w-\[85vw\] { width: 85vw !important; }
+        .max-w-\[340px\] { max-width: 340px !important; }
+        .max-w-\[150px\] { max-width: 150px !important; }
+        .h-\[600px\] { height: 600px !important; }
+        .p-\[3px\] { padding: 3px !important; }
+        
+        .z-\[30\] { z-index: 30 !important; }
+        .z-\[40\] { z-index: 40 !important; }
+        .z-\[50\] { z-index: 50 !important; }
+        .z-\[60\] { z-index: 60 !important; }
+        .z-\[100\] { z-index: 100 !important; }
+        .z-\[110\] { z-index: 110 !important; }
+
+        /* ========================================================================= */
+
         .font-times * { font-family: 'Times New Roman', Times, serif !important; }
-        .flash-focus { animation: flashFocus 1.2s ease-out; }
+        
+        @-webkit-keyframes flashFocus { 
+            0% { background-color: #fef08a; -webkit-transform: scale(1.01); border-radius: 8px; box-shadow: 0 0 15px rgba(234, 179, 8, 0.4); } 
+            100% { background-color: transparent; -webkit-transform: scale(1); border-radius: 8px; box-shadow: none; } 
+        }
         @keyframes flashFocus { 
             0% { background-color: #fef08a; transform: scale(1.01); border-radius: 8px; box-shadow: 0 0 15px rgba(234, 179, 8, 0.4); } 
             100% { background-color: transparent; transform: scale(1); border-radius: 8px; box-shadow: none; } 
         }
+        .flash-focus { -webkit-animation: flashFocus 1.2s ease-out; animation: flashFocus 1.2s ease-out; }
+
         mjx-container[display="true"], mjx-container { display: inline-block !important; margin: 0 4px !important; }
-        #questions-container p, #questions-container div.text-\\[15px\\] > div, .inline-answer .break-words > div, .inline-answer .break-words p { display: inline !important; }
+        #questions-container p, #questions-container div.text-\[15px\] > div, .inline-answer .break-words > div, .inline-answer .break-words p { display: inline !important; }
         .paper-bg { background-color: #ffffff; background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px); background-size: 24px 24px; }
+        
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        * { font-family: 'Be Vietnam Pro', sans-serif !important; -webkit-font-smoothing: antialiased; }
-        body { background-color: #f1f5f9; user-select: none; scroll-behavior: smooth; }
-        @keyframes flashRed { 0%, 100% { background-color: #f1f5f9; } 50% { background-color: #fecdd3; } }
-        .cheat-warning { animation: flashRed 1s 3; }
-        /* Tối ưu chiều cao thực cho Safari Mobile */
-        html, body { height: 100%; height: -webkit-fill-available; }
+        
+        * { font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important; -webkit-font-smoothing: antialiased; box-sizing: border-box; }
+        
+        /* CẤU TRÚC GỐC ĐỂ MỌI TRÌNH DUYỆT HIỂN THỊ ĐÚNG */
+        html, body { height: 100%; height: -webkit-fill-available; overflow: hidden; }
+        body { background-color: #f1f5f9; user-select: none; scroll-behavior: smooth; margin: 0; padding: 0; }
+        
         .custom-scrollbar { -webkit-overflow-scrolling: touch; }
+        
+        @-webkit-keyframes flashRed { 0%, 100% { background-color: #f1f5f9; } 50% { background-color: #fecdd3; } }
+        @keyframes flashRed { 0%, 100% { background-color: #f1f5f9; } 50% { background-color: #fecdd3; } }
+        .cheat-warning { -webkit-animation: flashRed 1s 3; animation: flashRed 1s 3; }
+        
+        /* THIẾT KẾ FALLBACK KÍNH MỜ CHO IOS 12 */
         .glass-panel { 
             background-color: rgba(30, 41, 59, 0.85); 
             -webkit-backdrop-filter: blur(16px); 
@@ -94,18 +217,32 @@
         @supports (backdrop-filter: blur(16px)) or (-webkit-backdrop-filter: blur(16px)) {
             .glass-panel { background-color: rgba(255, 255, 255, 0.1); }
         }
+        
+        /* HIỂN THỊ ẨN CHUẨN IOS 12 */
+        .hidden { display: none !important; }
+
         .tf-btn.active-true { background-color: #10b981; color: white; border-color: #059669; font-weight: bold; }
         .tf-btn.active-false { background-color: #f43f5e; color: white; border-color: #e11d48; font-weight: bold; }
         .toolkit-btn.active { background-color: #ffffff; color: #2563eb; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+
+        /* CHỐNG ZOOM BÀN PHÍM VÀ BẢO VỆ ẢNH IOS 12 */
+        input, select, textarea { font-size: 16px !important; }
+        .max-w-full { max-width: 100%; height: auto; }
+        
+        /* CĂN CHỈNH MOBILE / PC CHO TOOLBAR */
+        @media (max-width: 767px) {
+            .desktop-toolbar { display: none !important; }
+        }
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden flex flex-col relative text-slate-800" oncontextmenu="return false;">
 
     <div id="toast-container" class="fixed top-6 right-6 z-[100] flex flex-col space-y-3 pointer-events-none"></div>
 
-    <!-- MÀN HÌNH LOBBY -->
-    <div id="lobby-screen" class="absolute inset-0 bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 z-40 flex flex-col items-center justify-center p-4 transition-all duration-500 hidden overflow-y-auto">
-        <div class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6 my-auto">
+    <!-- MÀN HÌNH LOBBY: Trả lại thiết kế gốc absolute inset-0, thêm inline style display: none -->
+    <div id="lobby-screen" style="display: none;" class="absolute inset-0 bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 z-40 hidden flex-col items-center justify-center p-4 transition-all duration-500 overflow-y-auto custom-scrollbar">
+        <!-- Đệm dưới (pb-24) để Android không bị che mất nội dung -->
+        <div class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6 my-auto pb-24 md:pb-0">
             
             <div class="md:col-span-1 space-y-6">
                 <!-- THẺ PROFILE HỌC SINH -->
@@ -113,12 +250,14 @@
                     <div class="bg-white w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl shadow-lg shadow-blue-500/30" id="lobby-avatar">🎓</div>
                     <h2 class="text-lg font-black text-white" id="display-name">Thí Sinh</h2>
                     <p class="text-xs text-blue-300 font-bold mb-4" id="display-class">Lớp</p>
-                    <div class="flex items-center justify-center space-x-2.5 mb-5">
-                        <a href="snote.html" class="text-[11px] text-white/60 hover:text-blue-400 transition underline font-semibold">← Sổ tay</a>
-                        <span class="text-white/20 text-[10px]">|</span>
+                    
+                    <!-- Dùng space-x-2 thay thế cho gap-2 để an toàn trên Flexbox iOS 12 -->
+                    <div class="flex flex-wrap items-center justify-center space-x-2 mb-5">
+                        <a href="snote.html" class="text-[11px] text-white/60 hover:text-blue-400 transition underline font-semibold">Sổ tay</a>
+                        <span class="text-white/20 text-[10px] hidden sm:inline">|</span>
                         <a href="exam.html" class="text-[11px] text-white/60 hover:text-orange-400 transition underline font-semibold">EduMaster</a>
-                        <span class="text-white/20 text-[10px]">|</span>
-                        <a href="index.html" class="text-[11px] text-rose-300/80 hover:text-rose-400 transition underline font-semibold">Đăng xuất →</a>
+                        <span class="text-white/20 text-[10px] hidden sm:inline">|</span>
+                        <a href="index.html" class="text-[11px] text-rose-300/80 hover:text-rose-400 transition underline font-semibold">Đăng xuất</a>
                     </div>
                     
                     <!-- NÚT HỒ SƠ HỌC TẬP -->
@@ -161,7 +300,7 @@
     </div>
 
     <!-- MÀN HÌNH ĐẾM NGƯỢC -->
-    <div id="waiting-screen" class="absolute inset-0 bg-slate-900 z-30 flex items-center justify-center p-4 hidden">
+    <div id="waiting-screen" style="display: none;" class="absolute inset-0 bg-slate-900 z-30 hidden flex-col items-center justify-center p-4">
         <div class="text-center">
             <p class="text-emerald-400 font-bold uppercase tracking-widest text-sm mb-4" id="waiting-room-name">...</p>
             <h2 class="text-white font-semibold text-lg mb-6">Thời gian đến lúc mở đề:</h2>
@@ -171,7 +310,7 @@
     </div>
 
     <!-- KHU VỰC THI (LIVE EXAM) -->
-    <div id="exam-screen" class="flex-1 flex flex-col w-full h-full hidden z-20 bg-slate-50/50">
+    <div id="exam-screen" style="display: none;" class="flex-1 hidden flex-col w-full h-full z-20 bg-slate-50/50">
         <!-- HEADER TRUNG TÂM -->
         <header class="bg-white border-b border-slate-200 px-3 md:px-5 py-2.5 flex justify-between items-center shadow-sm shrink-0 relative z-30">
             <div class="flex items-center space-x-2 md:space-x-3 w-1/4">
@@ -190,7 +329,8 @@
             </div>
 
             <div class="flex items-center justify-end space-x-3 md:space-x-4 w-auto md:w-1/4 shrink-0">
-                <div class="hidden lg:flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200 space-x-1 text-[13px]">
+                <!-- ĐÃ SỬA: Loại bỏ class hidden và dùng media query custom (.desktop-toolbar) để đảm bảo thẻ bọc luôn hiện trên PC -->
+                <div class="desktop-toolbar flex flex-wrap items-center bg-slate-100 p-1 rounded-lg border border-slate-200 space-x-1 text-[13px] justify-center mr-3 md:mr-4">
                     <button id="btn-mode-standard" onclick="ArenaEngine.setMode('standard')" class="toolkit-btn active px-2 py-1 rounded text-slate-500 hover:text-blue-600 transition flex items-center justify-center font-bold text-[10px]" title="Đề Tiêu Chuẩn">Tiêu Chuẩn</button>
                     <button id="btn-mode-matrix" onclick="ArenaEngine.setMode('matrix')" class="toolkit-btn px-2 py-1 rounded text-slate-500 hover:text-blue-600 transition flex items-center justify-center font-bold text-[10px]" title="Phiếu Tô Thực Chiến">Thực Chiến</button>
                     <div class="w-px h-4 bg-slate-300 mx-0.5"></div>
@@ -212,17 +352,17 @@
             <div class="flex-1 overflow-y-auto p-3 md:p-8 pb-32 transition-all duration-300 custom-scrollbar relative bg-slate-100/50" id="exam-scroll-area">
                 <div class="max-w-4xl mx-auto space-y-6 md:space-y-8" id="questions-container"></div>
                 
-                <div id="pagination-controls" class="hidden flex justify-between max-w-4xl mx-auto mt-6 bg-white p-3 md:p-4 rounded-2xl shadow-sm border border-slate-200">
+                <div id="pagination-controls" style="display: none;" class="hidden flex justify-between max-w-4xl mx-auto mt-6 bg-white p-3 md:p-4 rounded-2xl shadow-sm border border-slate-200">
                     <button id="btn-prev" type="button" onclick="ArenaEngine.prevQuestion()" class="px-4 md:px-6 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-xs md:text-sm">&larr; Trước</button>
                     <button id="btn-next" type="button" onclick="ArenaEngine.nextQuestion()" class="px-4 md:px-6 py-2 bg-[#1e3a8a] hover:bg-blue-800 text-white font-bold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md text-xs md:text-sm">Tiếp &rarr;</button>
                 </div>
             </div>
 
             <!-- OVERLAY MOBILE -->
-            <div id="mobile-matrix-overlay" onclick="ArenaEngine.toggleMobileMatrix()" class="md:hidden fixed inset-0 bg-slate-900/40 z-40 hidden opacity-0 transition-opacity duration-300"></div>
+            <div id="mobile-matrix-overlay" style="display: none;" onclick="ArenaEngine.toggleMobileMatrix()" class="md:hidden fixed inset-0 bg-slate-900/40 z-40 hidden opacity-0 transition-opacity duration-300"></div>
 
             <!-- BẢNG ĐIỀU HƯỚNG / PHIẾU TÔ -->
-            <div id="right-panel" class="fixed inset-y-0 right-0 z-50 flex flex-col w-[85vw] max-w-[340px] md:w-72 lg:w-80 bg-white border-l border-slate-200 shadow-2xl md:shadow-[-10px_0_15px_-3px_rgba(0,0,0,0.03)] transform translate-x-full md:translate-x-0 md:relative transition-transform duration-300 h-full">
+            <div id="right-panel" class="fixed inset-y-0 right-0 z-50 flex flex-col w-[300px] md:w-72 lg:w-80 bg-white border-l border-slate-200 shadow-2xl md:shadow-[-10px_0_15px_-3px_rgba(0,0,0,0.03)] transform translate-x-full md:translate-x-0 md:relative transition-transform duration-300 h-full">
                 <div id="panel-standard" class="flex flex-col h-full overflow-hidden">
                     <div class="p-4 border-b border-slate-100 shrink-0 flex justify-between items-center">
                         <p class="text-xs font-black text-slate-800 uppercase tracking-widest">Tiến độ làm bài</p>
@@ -238,7 +378,7 @@
                     </div>
                 </div>
 
-                <div id="panel-matrix" class="hidden flex-col h-full bg-slate-50 overflow-hidden relative">
+                <div id="panel-matrix" style="display: none;" class="hidden flex-col h-full bg-slate-50 overflow-hidden relative">
                     <div class="bg-slate-900 text-white p-4 shrink-0 text-center shadow-md z-20 relative">
                         <h3 class="font-black tracking-widest uppercase text-sm">Phiếu Tô Trắc Nghiệm</h3>
                         <p class="text-[9px] text-slate-400 mt-1 uppercase font-bold">Chuẩn cấu trúc 2025</p>
@@ -255,7 +395,7 @@
     </div>
 
     <!-- MODAL HỒ SƠ HỌC TẬP (PROFILE) -->
-    <div id="profile-modal" class="fixed inset-0 bg-slate-900/90 z-50 hidden flex-col items-center justify-center p-4 backdrop-blur-sm transition-all duration-300">
+    <div id="profile-modal" style="display: none;" class="fixed inset-0 bg-slate-900/90 z-50 hidden flex-col items-center justify-center p-4 backdrop-blur-sm transition-all duration-300">
         <div class="bg-white p-6 md:p-8 rounded-3xl max-w-3xl w-full shadow-2xl flex flex-col max-h-[85vh] transform scale-100">
             <div class="flex justify-between items-center mb-6 shrink-0 border-b border-slate-100 pb-4">
                 <div>
@@ -264,7 +404,7 @@
                     </h2>
                     <p class="text-xs text-slate-500 font-medium mt-1">Lịch sử các bài thi bạn đã nộp trên hệ thống.</p>
                 </div>
-                <button onclick="document.getElementById('profile-modal').classList.add('hidden')" class="w-10 h-10 bg-slate-100 hover:bg-rose-100 text-slate-500 hover:text-rose-600 rounded-full font-black transition flex items-center justify-center text-lg">✕</button>
+                <button onclick="document.getElementById('profile-modal').style.display='none'" class="w-10 h-10 bg-slate-100 hover:bg-rose-100 text-slate-500 hover:text-rose-600 rounded-full font-black transition flex items-center justify-center text-lg">✕</button>
             </div>
             <div class="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-3" id="profile-history-list">
                 <!-- Data sẽ được đổ vào đây -->
@@ -273,7 +413,7 @@
     </div>
 
     <!-- MODAL KẾT QUẢ -->
-    <div id="result-modal" class="fixed inset-0 bg-slate-900/90 z-[60] hidden flex-col items-center justify-center p-4">
+    <div id="result-modal" style="display: none;" class="fixed inset-0 bg-slate-900/90 z-[60] hidden flex-col items-center justify-center p-4">
         <div class="bg-white p-6 md:p-8 rounded-3xl max-w-md w-full text-center shadow-2xl transform transition-all scale-100">
             <div class="w-20 h-20 md:w-24 md:h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-4xl md:text-5xl mx-auto mb-6 shadow-lg">✅</div>
             <h2 class="text-2xl md:text-3xl font-black text-slate-800 mb-2">Thông tin Bài thi</h2>
@@ -298,16 +438,22 @@
                 const t = document.createElement('div');
                 const col = type === 'error' ? 'bg-rose-500 border-rose-600' : (type === 'success' ? 'bg-emerald-500 border-emerald-600' : 'bg-slate-800 border-slate-900');
                 const ic = type === 'error' ? '⚠️' : (type === 'success' ? '✅' : '💡');
+                
                 t.className = `flex items-center space-x-2 ${col} text-white px-4 py-3 rounded-xl shadow-lg border text-xs font-bold transition-all transform opacity-100`;
                 t.innerHTML = `<span>${ic}</span><span>${msg}</span>`;
                 c.appendChild(t);
-                try {
+                
+                if (typeof t.animate === 'function') {
                     t.animate([{ transform: 'translateY(-20px)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }], { duration: 300, easing: 'ease-out' });
                     setTimeout(() => { 
-                        const a = t.animate([{ opacity: 1 }, { opacity: 0, transform: 'translateX(20px)' }], { duration: 300, fill: 'forwards' }); 
-                        a.onfinish = () => t.remove(); 
+                        try {
+                            const a = t.animate([{ opacity: 1 }, { opacity: 0, transform: 'translateX(20px)' }], { duration: 300, fill: 'forwards' }); 
+                            a.onfinish = () => t.remove(); 
+                        } catch(e) { t.remove(); }
                     }, 3000);
-                } catch(e) { setTimeout(() => t.remove(), 3000); }
+                } else {
+                    setTimeout(() => t.remove(), 3000);
+                }
             },
             escapeHTML: (str) => {
                 if (!str) return "";
@@ -325,16 +471,7 @@
 
             normalizeAnswer(str) {
                 if (str === undefined || str === null) return "";
-                return String(str)
-                    .normalize('NFKC')                            
-                    .replace(/[−–—―]/g, '-') 
-                    .replace(/²/g, '^2')                         
-                    .replace(/³/g, '^3')                         
-                    .replace(/\s+/g, '')                         
-                    .replace(/[;,]/g, '.')                       
-                    .replace(/\$/g, '')                          
-                    .toLowerCase()
-                    .trim();
+                return String(str).normalize('NFKC').replace(/[−–—―]/g, '-').replace(/²/g, '^2').replace(/³/g, '^3').replace(/\s+/g, '').replace(/[;,]/g, '.').replace(/\$/g, '').toLowerCase().trim();
             },
 
             checkShortAnswer(studentAns, correctAns) {
@@ -355,12 +492,16 @@
                 const overlay = document.getElementById('mobile-matrix-overlay');
                 if (this.isMobileMatrixOpen) {
                     panel.classList.remove('translate-x-full');
+                    overlay.style.display = 'block';
                     overlay.classList.remove('hidden');
                     setTimeout(() => overlay.classList.remove('opacity-0'), 10);
                 } else {
                     panel.classList.add('translate-x-full');
                     overlay.classList.add('opacity-0');
-                    setTimeout(() => overlay.classList.add('hidden'), 300);
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                        overlay.classList.add('hidden');
+                    }, 300);
                 }
             },
 
@@ -418,7 +559,7 @@
                 } else {
                     Utils.toast("Vui lòng đăng nhập tại EduMaster để vào phòng thi!", "error");
                     document.body.innerHTML = `<div class="flex items-center justify-center h-screen bg-slate-900 flex-col"><span class="text-6xl animate-spin mb-4">🌀</span><h2 class="text-xl font-bold text-white mb-2">Đang chuyển hướng...</h2><p class="text-sm text-slate-400">Bạn cần làm thủ tục định danh tại Cổng EduMaster.</p></div>`;
-                    setTimeout(() => window.location.href = 'exam.html', 1500);
+                    setTimeout(() => window.location.href = 'index.html', 1500);
                     return;
                 }
                 
@@ -433,7 +574,7 @@
                             changed = true;
                         }
                     });
-                    if (changed && document.getElementById('lobby-screen').classList.contains('hidden') === false) {
+                    if (changed && document.getElementById('lobby-screen').style.display !== 'none') {
                         this.applyFilters();
                     }
                 }, 15000);
@@ -471,8 +612,8 @@
                         this.displayFinalScoreModal(mySub);
                         const modal = document.getElementById('result-modal');
                         if (modal) {
+                            modal.style.display = 'flex';
                             modal.classList.remove('hidden');
-                            modal.classList.add('flex');
                             const btnReview = document.getElementById('btn-close-modal');
                             if(btnReview) btnReview.innerText = "Đóng Bảng Điểm";
                         }
@@ -552,6 +693,8 @@
                 document.getElementById('exam-avatar-char').innerText = this.student.name.charAt(0).toUpperCase();
                 document.getElementById('lobby-avatar').innerText = this.student.name.charAt(0).toUpperCase();
                 this.applyFilters();
+                
+                document.getElementById('lobby-screen').style.display = 'flex';
                 document.getElementById('lobby-screen').classList.remove('hidden');
             },
 
@@ -596,8 +739,8 @@
                     }).join('');
                 }
                 
+                document.getElementById('profile-modal').style.display = 'flex';
                 document.getElementById('profile-modal').classList.remove('hidden');
-                document.getElementById('profile-modal').classList.add('flex');
             },
 
             reviewSubmissionById(subId) {
@@ -623,12 +766,12 @@
                 clearInterval(this.examInterval);
                 clearInterval(this.countdownInterval);
 
-                document.getElementById('profile-modal').classList.add('hidden');
-                document.getElementById('profile-modal').classList.remove('flex');
+                document.getElementById('profile-modal').style.display = 'none';
                 document.getElementById('lobby-screen').classList.add('opacity-0', 'pointer-events-none');
                 
                 setTimeout(() => {
-                    document.getElementById('lobby-screen').classList.add('hidden');
+                    document.getElementById('lobby-screen').style.display = 'none';
+                    document.getElementById('exam-screen').style.display = 'flex';
                     document.getElementById('exam-screen').classList.remove('hidden');
                     document.getElementById('exam-room-name-center').innerText = this.roomData.roomId;
                     
@@ -656,8 +799,8 @@
                         this.displayFinalScoreModal(targetSub);
                     }
                     
+                    document.getElementById('result-modal').style.display = 'flex';
                     document.getElementById('result-modal').classList.remove('hidden');
-                    document.getElementById('result-modal').classList.add('flex');
 
                     const btnReview = document.getElementById('btn-close-modal');
                     if(btnReview) btnReview.innerText = "Đóng Bảng Điểm";
@@ -689,10 +832,10 @@
                     const presence = this.roomPresence[r.roomId] || 0;
                     
                     return `
-                    <div class="bg-white/10 border flex flex-row items-center space-x-4 ${hasDone ? 'border-emerald-500/50 hover:border-emerald-400' : 'border-white/20 hover:border-blue-400'} p-3 md:p-4 rounded-xl transition group relative overflow-hidden">
+                    <div class="bg-white/10 border flex flex-col md:flex-row items-start md:items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4 md:p-5 rounded-xl transition group relative overflow-hidden ${hasDone ? 'border-emerald-500/50 hover:border-emerald-400' : 'border-white/20 hover:border-blue-400'}">
                         ${hasDone ? '<div class="absolute top-0 right-0 bg-emerald-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-bl-md shadow-sm">ĐÃ THI</div>' : ''}
                         
-                        <div class="flex-1 min-w-0">
+                        <div class="flex-1 min-w-0 w-full">
                             <div class="flex flex-wrap items-center space-x-2 mb-1.5">
                                 <span class="text-[9px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded font-black border border-indigo-500/30 uppercase tracking-widest">${r.subject} ${r.grade}</span>
                                 <span class="text-[9px] text-blue-200 font-semibold flex items-center space-x-1">⏱️ ${r.durationMinutes}p</span>
@@ -702,16 +845,16 @@
                             ${hasDone ? `<p class="text-[9px] text-emerald-400 font-bold mt-1">Đã làm: ${roomHistory.length} lần | Kỷ lục: ${maxScore.toFixed(1)}đ</p>` : ''}
                         </div>
                         
-                        <div class="shrink-0 flex items-center space-x-2">
+                        <div class="shrink-0 flex items-center space-x-2 w-full md:w-auto justify-end">
                             ${hasDone ? `
-                                <button type="button" onclick="ArenaEngine.reviewSubmissionById('${latestSubId}')" class="w-8 h-8 md:w-auto md:px-3 md:h-8 flex items-center justify-center bg-amber-500 hover:bg-amber-600 text-white border border-amber-600 rounded-lg text-xs font-black uppercase transition active:scale-95 shadow-md" title="Xem Lại">
-                                    👀 <span class="hidden md:inline ml-1 text-[10px]">Xem</span>
+                                <button type="button" onclick="ArenaEngine.reviewSubmissionById('${latestSubId}')" class="flex-1 md:flex-none w-auto h-8 md:px-3 flex items-center justify-center bg-amber-500 hover:bg-amber-600 text-white border border-amber-600 rounded-lg text-xs font-black uppercase transition active:scale-95 shadow-md" title="Xem Lại">
+                                    👀 <span class="ml-1 text-[10px]">Xem</span>
                                 </button>
-                                <button type="button" onclick="ArenaEngine.joinRoom('${r.roomId}')" class="w-8 h-8 md:w-auto md:px-3 md:h-8 flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg text-xs font-black uppercase transition active:scale-95 shadow-md" title="Thi Lại">
-                                    🔄 <span class="hidden md:inline ml-1 text-[10px]">Thi lại</span>
+                                <button type="button" onclick="ArenaEngine.joinRoom('${r.roomId}')" class="flex-1 md:flex-none w-auto h-8 md:px-3 flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg text-xs font-black uppercase transition active:scale-95 shadow-md" title="Thi Lại">
+                                    🔄 <span class="ml-1 text-[10px]">Thi lại</span>
                                 </button>
                             ` : `
-                                <button type="button" onclick="ArenaEngine.joinRoom('${r.roomId}')" class="bg-white text-slate-900 hover:bg-blue-50 border border-white/30 px-3 h-8 md:px-4 md:h-9 rounded-lg text-[10px] md:text-xs font-black uppercase transition active:scale-95 shadow-lg">
+                                <button type="button" onclick="ArenaEngine.joinRoom('${r.roomId}')" class="w-full md:w-auto bg-white text-slate-900 hover:bg-blue-50 border border-white/30 px-3 h-8 md:px-4 md:h-9 rounded-lg text-[10px] md:text-xs font-black uppercase transition active:scale-95 shadow-lg">
                                     Thi Ngay
                                 </button>
                             `}
@@ -745,11 +888,14 @@
                 this.isSubmitted = false;
                 this.currentIndex = 0;
                 document.getElementById('lobby-screen').classList.add('opacity-0', 'pointer-events-none');
-                setTimeout(() => document.getElementById('lobby-screen').classList.add('hidden'), 500);
+                setTimeout(() => {
+                    document.getElementById('lobby-screen').style.display = 'none';
+                }, 500);
                 this.checkTimeState();
             },
 
             checkTimeState() {
+                document.getElementById('waiting-screen').style.display = 'flex';
                 document.getElementById('waiting-screen').classList.remove('hidden');
                 document.getElementById('waiting-room-name').innerText = this.roomData.roomName;
                 this.countdownInterval = setInterval(() => {
@@ -764,7 +910,8 @@
             },
 
             startExam() {
-                document.getElementById('waiting-screen').classList.add('hidden');
+                document.getElementById('waiting-screen').style.display = 'none';
+                document.getElementById('exam-screen').style.display = 'flex';
                 document.getElementById('exam-screen').classList.remove('hidden');
                 document.getElementById('exam-room-name-center').innerText = this.roomData.roomId;
 
@@ -809,13 +956,17 @@
                 const pagiControls = document.getElementById('pagination-controls');
                 if (this.layoutMode === 'scroll') {
                     qItems.forEach(item => item.classList.remove('hidden'));
-                    if(pagiControls) pagiControls.classList.add('hidden');
+                    if(pagiControls) {
+                        pagiControls.style.display = 'none';
+                        pagiControls.classList.add('hidden');
+                    }
                 } else {
                     qItems.forEach((item, idx) => {
                         if (idx === this.currentIndex) item.classList.remove('hidden');
                         else item.classList.add('hidden');
                     });
                     if(pagiControls) {
+                        pagiControls.style.display = 'flex';
                         pagiControls.classList.remove('hidden');
                         document.getElementById('btn-prev').disabled = (this.currentIndex === 0);
                         document.getElementById('btn-next').disabled = (this.currentIndex === this.examData.length - 1);
@@ -849,18 +1000,18 @@
 
                 if (mode === 'matrix') {
                     container.classList.add('matrix-active');
+                    pStandard.style.display = 'none';
                     pStandard.classList.add('hidden');
-                    pStandard.classList.remove('flex');
+                    pMatrix.style.display = 'flex';
                     pMatrix.classList.remove('hidden');
-                    pMatrix.classList.add('flex');
                     if(btnStd) btnStd.classList.remove('active');
                     if(btnMat) btnMat.classList.add('active');
                 } else {
                     container.classList.remove('matrix-active');
+                    pStandard.style.display = 'flex';
                     pStandard.classList.remove('hidden');
-                    pStandard.classList.add('flex');
+                    pMatrix.style.display = 'none';
                     pMatrix.classList.add('hidden');
-                    pMatrix.classList.remove('flex');
                     if(btnStd) btnStd.classList.add('active');
                     if(btnMat) btnMat.classList.remove('active');
                 }
@@ -894,9 +1045,9 @@
                 container.innerHTML = this.examData.map((q, idx) => {
                     let html = "";
                     let typeBadge = "";
-                    if (q.type === 'tf') typeBadge = '<span class="text-[10px] font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded border border-rose-200">Dạng Đúng/Sai cụm</span>';
-                    else if (q.type === 'short') typeBadge = '<span class="text-[10px] font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded border border-amber-200">Dạng Trả lời ngắn</span>';
-                    else if (q.type === 'essay') typeBadge = '<span class="text-[10px] font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded border border-blue-200">Dạng Tự luận</span>';
+                    if (q.type === 'tf') typeBadge = '<span class="text-[10px] font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded border border-rose-200 ml-3">Dạng Đúng/Sai cụm</span>';
+                    else if (q.type === 'short') typeBadge = '<span class="text-[10px] font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded border border-amber-200 ml-3">Dạng Trả lời ngắn</span>';
+                    else if (q.type === 'essay') typeBadge = '<span class="text-[10px] font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded border border-blue-200 ml-3">Dạng Tự luận</span>';
 
                     let blockStatus = "";
                     if (this.isSubmitted && q.type !== 'essay') {
@@ -910,13 +1061,13 @@
                             (q.correct || []).forEach((c, i) => { if (this.answers[q.id][i] !== c) isFullyCorrect = false; });
                         }
                         blockStatus = isFullyCorrect ? `<div class="absolute top-0 right-0 bg-emerald-500 text-white font-black text-xs px-4 py-1 rounded-bl-xl shadow-sm">ĐÚNG</div>` : `<div class="absolute top-0 right-0 bg-rose-500 text-white font-black text-xs px-4 py-1 rounded-bl-xl shadow-sm">SAI</div>`;
-                        html = `<div class="q-item-container paper-bg p-4 md:p-8 rounded-2xl shadow-xl border-2 ${isFullyCorrect ? 'border-emerald-300' : 'border-rose-300'} relative overflow-hidden" id="q-block-${q.id}">`;
+                        html = `<div class="q-item-container paper-bg p-4 md:p-8 rounded-2xl shadow-xl border-2 ${isFullyCorrect ? 'border-emerald-300' : 'border-rose-300'} relative overflow-hidden mb-6 md:mb-8" id="q-block-${q.id}">`;
                     } else {
-                        html = `<div class="q-item-container paper-bg p-4 md:p-8 rounded-2xl shadow-xl border border-slate-200 relative overflow-hidden" id="q-block-${q.id}">`;
+                        html = `<div class="q-item-container paper-bg p-4 md:p-8 rounded-2xl shadow-xl border border-slate-200 relative overflow-hidden mb-6 md:mb-8" id="q-block-${q.id}">`;
                     }
 
                     html += blockStatus;
-                    html += `<div class="flex items-center space-x-3 mb-4 relative z-10"><span class="bg-slate-800 text-white px-3 py-1 rounded-lg text-xs font-black uppercase shadow-sm">Câu ${idx + 1}</span>${typeBadge}</div>`;
+                    html += `<div class="flex items-center mb-4 relative z-10"><span class="bg-slate-800 text-white px-3 py-1 rounded-lg text-xs font-black uppercase shadow-sm">Câu ${idx + 1}</span>${typeBadge}</div>`;
 
                     let isFlagged = this.flags ? this.flags[q.id] : false;
                     html += `
@@ -969,7 +1120,6 @@
                             displayCorrect = Array.isArray(q.correct) ? q.correct.join(" hoặc ") : (typeof q.correct === 'string' ? q.correct.replace(/\|/g, " hoặc ") : q.correct);
                         }
 
-                        // KHẮC PHỤC LỖI TẠI ĐÂY: Loại bỏ dấu `?.` trong inline events
                         html += `<div class="inline-answer bg-amber-50/80 backdrop-blur-sm border border-amber-200 p-4 md:p-5 rounded-xl shadow-sm relative z-10">
                                     <label class="block text-[10px] md:text-[11px] font-black text-amber-700 uppercase tracking-widest mb-2">✍️ Nhập đáp án</label>
                                     ${!this.isSubmitted ? stemToolbarHTML(q.id, 'short') : ''}
@@ -979,7 +1129,6 @@
                     } else if (q.type === 'essay') {
                         let disableAttr = this.isSubmitted ? 'disabled style="cursor: not-allowed; background-color: #f8fafc;"' : '';
                         
-                        // KHẮC PHỤC LỖI TẠI ĐÂY: Loại bỏ dấu `?.` trong inline events
                         html += `<div class="bg-blue-50/80 backdrop-blur-sm border border-blue-200 p-4 md:p-5 rounded-xl shadow-sm relative z-10">
                                     <label class="block text-[10px] md:text-[11px] font-black text-blue-700 uppercase tracking-widest mb-2">✍️ Bài làm tự luận</label>
                                     ${!this.isSubmitted ? stemToolbarHTML(q.id, 'essay') : ''}
@@ -1008,7 +1157,7 @@
 
             renderPalette() {
                 document.getElementById('palette-container').innerHTML = this.examData.map((q, idx) => {
-                    return `<button type="button" id="pal-btn-${q.id}" onclick="document.getElementById('q-block-${q.id}').scrollIntoView({behavior:'smooth'}); ArenaEngine.isMobileMatrixOpen = false; document.getElementById('right-panel').classList.add('translate-x-full'); document.getElementById('mobile-matrix-overlay').classList.add('opacity-0'); setTimeout(()=>document.getElementById('mobile-matrix-overlay').classList.add('hidden'),300);" class="w-9 h-9 md:w-10 md:h-10 rounded-lg text-[10px] md:text-xs font-bold border transition bg-white text-slate-500 border-slate-200 hover:bg-slate-50 shadow-sm">${idx + 1}</button>`;
+                    return `<button type="button" id="pal-btn-${q.id}" onclick="document.getElementById('q-block-${q.id}').scrollIntoView({behavior:'smooth'}); ArenaEngine.isMobileMatrixOpen = false; document.getElementById('right-panel').classList.add('translate-x-full'); document.getElementById('mobile-matrix-overlay').style.display='none'; setTimeout(()=>document.getElementById('mobile-matrix-overlay').classList.add('hidden'),300);" class="w-9 h-9 md:w-10 md:h-10 rounded-lg text-[10px] md:text-xs font-bold border transition bg-white text-slate-500 border-slate-200 hover:bg-slate-50 shadow-sm">${idx + 1}</button>`;
                 }).join('');
             },
 
@@ -1093,7 +1242,6 @@
                         const ring = inBtn ? inBtn.querySelector('.check-ring') : null;
                         const matBtn = document.getElementById(`mat-btn-${q.id}-${aIdx}`);
 
-                        // KHẮC PHỤC LỖI TẠI ĐÂY: Chuyển `gap-3` thành `space-x-3` cho iOS 12
                         if (!this.isSubmitted) {
                             if (inBtn) inBtn.className = `w-full h-full text-left p-3 md:p-4 rounded-xl border-2 transition flex items-start space-x-3 font-medium text-[13px] md:text-[14px] ${isSelected ? 'border-blue-500 bg-blue-50 text-blue-800' : 'border-slate-100 bg-white/90 backdrop-blur-sm hover:border-blue-400 hover:bg-blue-50/80 text-slate-700 shadow-sm'}`;
                             if (ring) ring.className = `check-ring w-4 h-4 md:w-5 md:h-5 rounded-full border-2 flex-shrink-0 mt-0.5 transition-colors ${isSelected ? 'bg-blue-500 border-blue-500' : 'bg-white border-slate-300'}`;
@@ -1166,7 +1314,7 @@
             inputEssay(qId, val) { if(this.isSubmitted) return; this.answers[qId] = val; this.syncUI(qId); },
 
             handleAntiCheat() {
-                if(document.hidden && !document.getElementById('exam-screen').classList.contains('hidden') && !this.isSubmitted) {
+                if(document.hidden && document.getElementById('exam-screen').style.display !== 'none' && !this.isSubmitted) {
                     this.cheatCount++;
                     document.body.classList.add('cheat-warning');
                     setTimeout(() => document.body.classList.remove('cheat-warning'), 3000);
@@ -1252,7 +1400,7 @@
                     document.getElementById('res-obj').innerText = `${objCorrect} / ${objTotal} câu đúng`;
                     document.getElementById('res-essay').innerText = `${essayTotal} câu (Chờ duyệt)`;
                     document.getElementById('result-modal').classList.remove('hidden');
-                    document.getElementById('result-modal').classList.add('flex');
+                    document.getElementById('result-modal').style.display = 'flex';
                 } catch(e) {
                     console.error("Lỗi khi nộp bài:", e);
                     Utils.toast("Có lỗi xảy ra khi nộp bài. Vui lòng báo Giám thị.", "error");
@@ -1263,7 +1411,7 @@
                 try {
                     this.isSubmitted = true;
                     const modal = document.getElementById('result-modal');
-                    if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+                    if (modal) { modal.classList.add('hidden'); modal.style.display = 'none'; }
 
                     const timerLabel = document.getElementById('timer-label');
                     if (timerLabel) timerLabel.innerText = "Trạng Thái";
@@ -1369,16 +1517,16 @@
     <!-- NÚT MỞ NHÁP VÀ ĐỔI FONT -->
     <div class="fixed bottom-6 left-4 md:left-6 z-40 flex flex-col space-y-3">
         <button onclick="document.body.classList.toggle('font-times')" class="bg-slate-700 text-white w-12 h-12 md:w-14 md:h-14 rounded-full shadow-xl flex items-center justify-center text-xl md:text-2xl hover:scale-110 transition-transform font-serif" title="Bật/Tắt Font thi thật">T</button>
-        <button onclick="document.getElementById('scratchpad').classList.toggle('hidden'); setTimeout(() => resizeCanvas(), 100);" class="bg-indigo-600 text-white w-12 h-12 md:w-14 md:h-14 rounded-full shadow-xl flex items-center justify-center text-xl md:text-2xl hover:scale-110 transition-transform" title="Mở Nháp điện tử">✍️</button>
+        <button onclick="document.getElementById('scratchpad').style.display='flex'; setTimeout(() => resizeCanvas(), 100);" class="bg-indigo-600 text-white w-12 h-12 md:w-14 md:h-14 rounded-full shadow-xl flex items-center justify-center text-xl md:text-2xl hover:scale-110 transition-transform" title="Mở Nháp điện tử">✍️</button>
     </div>
 
     <!-- KHUNG NHÁP ĐIỆN TỬ -->
-    <div id="scratchpad" class="hidden fixed bottom-20 md:bottom-24 left-4 md:left-6 z-50 bg-white border-2 border-indigo-200 shadow-2xl rounded-2xl p-3 w-[90vw] md:w-80 h-72 md:h-80 flex flex-col cursor-crosshair">
+    <div id="scratchpad" style="display: none;" class="hidden fixed bottom-20 md:bottom-24 left-4 md:left-6 z-50 bg-white border-2 border-indigo-200 shadow-2xl rounded-2xl p-3 w-[90vw] md:w-80 h-72 md:h-80 flex-col cursor-crosshair">
         <div class="flex justify-between items-center mb-2 select-none">
             <span class="font-bold text-indigo-700 text-sm">📝 Nháp điện tử</span>
             <div class="flex space-x-2">
                 <button onclick="ArenaEngine.clearCanvas()" class="text-[11px] font-bold bg-slate-100 px-2 py-1 rounded text-slate-600 hover:bg-rose-100 hover:text-rose-600 transition">Xóa nháp</button>
-                <button onclick="document.getElementById('scratchpad').classList.add('hidden')" class="text-[11px] font-bold bg-slate-100 px-2 py-1 rounded text-slate-600 hover:bg-slate-200 transition">Đóng</button>
+                <button onclick="document.getElementById('scratchpad').style.display='none'" class="text-[11px] font-bold bg-slate-100 px-2 py-1 rounded text-slate-600 hover:bg-slate-200 transition">Đóng</button>
             </div>
         </div>
         <canvas id="draftCanvas" class="bg-slate-50 border border-slate-200 rounded flex-1 touch-none"></canvas>
