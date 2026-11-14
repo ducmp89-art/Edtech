@@ -5,13 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>S-Note Pro 2026 | Hệ Thống Sổ Tay Điện Tử</title>
     
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 1. BẢN FALLBACK CHO IOS 12 (Sẽ gánh giao diện khi không nạp CDN v3) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    
+    <!-- 2. BẢN CHÍNH CDN CHO PC/ANDROID HIỆN ĐẠI (Tải có điều kiện) -->
+    <script>
+        (function() {
+            // Kiểm tra thiết bị Apple chạy iOS/iPadOS 10, 11, 12
+            var isOldIOS = /iP(ad|hone|od).+(OS 1[0-2]_|Version\/1[0-2])/i.test(navigator.userAgent);
+            
+            if (!isOldIOS) {
+                // Chỉ nạp Tailwind v3 trên trình duyệt hiện đại
+                var twScript = document.createElement('script');
+                twScript.src = 'https://cdn.tailwindcss.com';
+                document.head.appendChild(twScript);
+                
+                var configScript = document.createElement('script');
+                configScript.innerHTML = "tailwind.config = { corePlugins: { preflight: false } };";
+                document.head.appendChild(configScript);
+            } else {
+                console.log("Kích hoạt chế độ Fallback cho S-Note trên iOS cũ");
+            }
+        })();
+    </script>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- ĐÃ FIX: Ghim cứng version marked.js xuống bản 4.3.0 an toàn (hỗ trợ ES5/ES6) để tránh lỗi SyntaxError trên iOS 12 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
     
     <!-- Tối ưu riêng cho Apple / Safari -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -23,6 +48,74 @@
     <link rel="apple-touch-icon" href="icon-192.png">
 
     <style>
+        /* ========================================================================= */
+        /* BỘ TỪ ĐIỂN FALLBACK CHO IOS 12 (Đã sửa lỗi dư dấu escape \) */
+        /* ========================================================================= */
+        
+        /* Bảng màu Slate */
+        .bg-slate-50 { background-color: #f8fafc !important; }
+        .bg-slate-100 { background-color: #f1f5f9 !important; }
+        .bg-slate-200 { background-color: #e2e8f0 !important; }
+        .bg-slate-800 { background-color: #1e293b !important; }
+        .bg-slate-900 { background-color: #0f172a !important; }
+        
+        .text-slate-300 { color: #cbd5e1 !important; }
+        .text-slate-400 { color: #94a3b8 !important; }
+        .text-slate-500 { color: #64748b !important; }
+        .text-slate-600 { color: #475569 !important; }
+        .text-slate-700 { color: #334155 !important; }
+        .text-slate-800 { color: #1e293b !important; }
+        .text-slate-900 { color: #0f172a !important; }
+        
+        .border-slate-100 { border-color: #f1f5f9 !important; }
+        .border-slate-200 { border-color: #e2e8f0 !important; }
+        .border-slate-300 { border-color: #cbd5e1 !important; }
+
+        /* Nền trong suốt (Opacity Backgrounds) */
+        .bg-slate-50\/50 { background-color: rgba(248, 250, 252, 0.5) !important; }
+        .bg-slate-50\/60 { background-color: rgba(248, 250, 252, 0.6) !important; }
+        .bg-slate-100\/90 { background-color: rgba(241, 245, 249, 0.9) !important; }
+        .bg-slate-900\/50 { background-color: rgba(15, 23, 42, 0.5) !important; }
+        .bg-slate-950\/80 { background-color: rgba(2, 6, 23, 0.8) !important; }
+        
+        .bg-blue-50\/50 { background-color: rgba(239, 246, 255, 0.5) !important; }
+        .bg-blue-50\/60 { background-color: rgba(239, 246, 255, 0.6) !important; }
+        
+        .bg-amber-50\/60 { background-color: rgba(255, 251, 235, 0.6) !important; }
+        .bg-amber-50\/70 { background-color: rgba(255, 251, 235, 0.7) !important; }
+        
+        /* Viền trong suốt */
+        .border-slate-200\/60 { border-color: rgba(226, 232, 240, 0.6) !important; }
+        .border-slate-200\/80 { border-color: rgba(226, 232, 240, 0.8) !important; }
+        .border-amber-200\/80 { border-color: rgba(253, 230, 138, 0.8) !important; }
+
+        /* Kích thước chữ tuỳ chỉnh */
+        .text-\[8px\] { font-size: 8px !important; line-height: 12px !important; }
+        .text-\[10px\] { font-size: 10px !important; line-height: 14px !important; }
+        .text-\[13px\] { font-size: 13px !important; line-height: 18px !important; }
+        
+        /* Kích thước đặc thù S-Note (Đảm bảo Sidebar không bị biến dạng trên iOS 12) */
+        .w-\[300px\] { width: 300px !important; }
+        .w-\[340px\] { width: 340px !important; }
+        .min-w-\[340px\] { min-width: 340px !important; }
+        .max-w-\[340px\] { max-width: 340px !important; }
+        
+        /* Z-Index */
+        .z-\[40\] { z-index: 40 !important; }
+        .z-\[50\] { z-index: 50 !important; }
+        .z-\[100\] { z-index: 100 !important; }
+        .z-\[110\] { z-index: 110 !important; }
+        
+        /* Bóng đổ đặc thù */
+        .shadow-xs { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important; }
+        .shadow-2xs { box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.05) !important; }
+        
+        /* Hỗ trợ kính mờ trên Safari cũ */
+        .backdrop-blur-sm { -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+        .backdrop-blur-md { -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+        
+        /* ========================================================================= */
+
         /* Tối ưu chiều cao thực cho Safari Mobile */
         html, body { height: 100%; height: -webkit-fill-available; }
         
@@ -43,7 +136,6 @@
         .toast-enter { animation: slideUp 0.3s ease-out forwards; }
     </style>
 </head>
-<!-- Đã sửa: Dùng h-full để tương thích tuyệt đối với -webkit-fill-available trên iOS -->
 <body class="bg-slate-50 text-slate-800 h-full flex flex-col md:flex-row overflow-hidden relative">
 
     <div id="mobile-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 z-40 hidden md:hidden transition-opacity"></div>
