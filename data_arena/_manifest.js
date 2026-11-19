@@ -9,7 +9,7 @@ const EXAM_MANIFEST = [
     "lop_8/toan_8/toan_8_gk7.js",
     "lop_8/toan_8/toan_8_gk8.js",
     "lop_8/toan_8/toan_8_gk9.js",
-    "lop_8/toan_8/toan_8_gk11.js",
+    "lop_8/toan_8/toan_8_gk111.js",
     "lop_8/anh_8/tienganh_8_hk1.js",
     "lop_8/anh_8/tienganh_8_gk5.js",
     "lop_8/anh_8/tienganh_8_gk6.js",
