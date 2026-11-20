@@ -1,6 +1,6 @@
 window.ARENA_EXAMS.push({
   roomId: "TIENGANH10GKI188",
-  roomName: "Đề thi Giữa học kì 1 - Tiếng Anh 10 Global Success - Đề số 5",
+  roomName: "Đề thi Giữa học kì 1 - Tiếng Anh 10 Global Success - Đề số 88",
   type: "public",
   subject: "Tiếng Anh",
   grade: "10",
