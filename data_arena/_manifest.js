@@ -32,6 +32,7 @@ const EXAM_MANIFEST = [
     "lop_10/anh_10/anh_10_gk5.js",
     "lop_10/anh_10/anh_10_gk6.js",
     "lop_10/anh_10/anh_10_gk7.js",
+    "lop_10/anh_10/anh_10_gk8.js",
     "lop_10/dialy_10/dialy_10_gk1.js",
     "lop_10/van_10/nguvan_10_gk1.js",
     "lop_10/van_10/van_10_gk2",
