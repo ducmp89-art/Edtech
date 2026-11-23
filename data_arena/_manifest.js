@@ -36,6 +36,7 @@ const EXAM_MANIFEST = [
     "lop_10/dialy_10/dialy_10_gk1.js",
     "lop_10/van_10/nguvan_10_gk1.js",
     "lop_10/van_10/van_10_gk2",
+    "lop_10/ly_10/ly_10_khaosat.js",
     "DE_THI_MOI_2026.js"
     // Thêm tên file mới vào đây...
 ];
