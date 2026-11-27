@@ -13,14 +13,32 @@
     <title>EduMaster Pro V5 | Ultimate Gamification</title>
     <meta name="referrer" content="no-referrer">
     
-    <!-- LIBRARIES -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- LIBRARIES (TƯƠNG THÍCH IOS 12 + PC/ANDROID) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <script>
+        (function() {
+            var isOldIOS = /iP(ad|hone|od).+(OS 1[0-2]_|Version\/1[0-2])/i.test(navigator.userAgent);
+            if (!isOldIOS) {
+                var twScript = document.createElement('script');
+                twScript.src = 'https://cdn.tailwindcss.com';
+                twScript.onload = function() {
+                    if (window.tailwind) {
+                        window.tailwind.config = { darkMode: 'class', corePlugins: { preflight: false } };
+                    }
+                };
+                document.head.appendChild(twScript);
+            } else {
+                document.documentElement.classList.add('ios12-fallback');
+                console.log("Kích hoạt chế độ Fallback cho EduMaster trên iOS 12");
+            }
+        })();
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     
-    <!-- FIREBASE -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <!-- FIREBASE 8.10.1 (CHUẨN TƯƠNG THÍCH IOS 12) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
     <!-- FONTS & MATHJAX -->
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -135,6 +153,46 @@
         }
         
         html, body { height: 100%; height: -webkit-fill-available; }
+        /* =========================================================
+           BẢN VÁ CSS TƯƠNG THÍCH IOS 12 (TAILWIND V2 FALLBACK)
+           ========================================================= */
+        .frame-legend::before, .frame-mythic::before { top: -4px; right: -4px; bottom: -4px; left: -4px; }
+        .backface-hidden { -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+        .transform-style-3d { -webkit-transform-style: preserve-3d; transform-style: preserve-3d; }
+
+        .bg-slate-50 { background-color: #f8fafc !important; } .bg-slate-100 { background-color: #f1f5f9 !important; } .bg-slate-200 { background-color: #e2e8f0 !important; } .bg-slate-700 { background-color: #334155 !important; } .bg-slate-800 { background-color: #1e293b !important; } .bg-slate-900 { background-color: #0f172a !important; }
+        .text-slate-300 { color: #cbd5e1 !important; } .text-slate-400 { color: #94a3b8 !important; } .text-slate-500 { color: #64748b !important; } .text-slate-600 { color: #475569 !important; } .text-slate-700 { color: #334155 !important; } .text-slate-800 { color: #1e293b !important; }
+        .border-slate-100 { border-color: #f1f5f9 !important; } .border-slate-200 { border-color: #e2e8f0 !important; } .border-slate-300 { border-color: #cbd5e1 !important; } .border-slate-700 { border-color: #334155 !important; }
+
+        .bg-emerald-50 { background-color: #ecfdf5 !important; } .bg-emerald-100 { background-color: #d1fae5 !important; } .bg-emerald-400 { background-color: #34d399 !important; } .bg-emerald-500 { background-color: #10b981 !important; }
+        .text-emerald-400 { color: #34d399 !important; } .text-emerald-500 { color: #10b981 !important; } .text-emerald-600 { color: #059669 !important; } .text-emerald-700 { color: #047857 !important; } .text-emerald-800 { color: #065f46 !important; } .text-emerald-900 { color: #064e3b !important; }
+        .border-emerald-100 { border-color: #d1fae5 !important; } .border-emerald-200 { border-color: #a7f3d0 !important; } .border-emerald-300 { border-color: #6ee7b7 !important; } .border-emerald-500 { border-color: #10b981 !important; } .border-emerald-600 { border-color: #059669 !important; }
+
+        .bg-rose-50 { background-color: #fff1f2 !important; } .bg-rose-100 { background-color: #ffe4e6 !important; } .bg-rose-500 { background-color: #f43f5e !important; } .bg-rose-600 { background-color: #e11d48 !important; }
+        .text-rose-500 { color: #f43f5e !important; } .text-rose-600 { color: #e11d48 !important; } .text-rose-700 { color: #be123c !important; } .text-rose-800 { color: #9f1239 !important; } .text-rose-900 { color: #881337 !important; }
+        .border-rose-100 { border-color: #ffe4e6 !important; } .border-rose-200 { border-color: #fecdd3 !important; } .border-rose-300 { border-color: #fda4af !important; } .border-rose-400 { border-color: #fb7185 !important; } .border-rose-500 { border-color: #f43f5e !important; }
+
+        .bg-amber-50 { background-color: #fffbeb !important; } .bg-amber-100 { background-color: #fef3c7 !important; } .bg-amber-400 { background-color: #fbbf24 !important; } .bg-amber-500 { background-color: #f59e0b !important; }
+        .text-amber-400 { color: #fbbf24 !important; } .text-amber-500 { color: #f59e0b !important; } .text-amber-600 { color: #d97706 !important; } .text-amber-700 { color: #b45309 !important; } .text-amber-800 { color: #92400e !important; } .text-amber-900 { color: #78350f !important; }
+        .border-amber-100 { border-color: #fef3c7 !important; } .border-amber-200 { border-color: #fde68a !important; } .border-amber-300 { border-color: #fcd34d !important; } .border-amber-400 { border-color: #fbbf24 !important; }
+
+        .bg-white\/40 { background-color: rgba(255, 255, 255, 0.4) !important; } .bg-white\/50 { background-color: rgba(255, 255, 255, 0.5) !important; } .bg-white\/60 { background-color: rgba(255, 255, 255, 0.6) !important; } .bg-white\/70 { background-color: rgba(255, 255, 255, 0.7) !important; } .bg-white\/80 { background-color: rgba(255, 255, 255, 0.8) !important; } .bg-white\/90 { background-color: rgba(255, 255, 255, 0.9) !important; } .bg-white\/95 { background-color: rgba(255, 255, 255, 0.95) !important; }
+        .bg-slate-900\/60 { background-color: rgba(15, 23, 42, 0.6) !important; } .bg-slate-900\/70 { background-color: rgba(15, 23, 42, 0.7) !important; } .bg-slate-900\/80 { background-color: rgba(15, 23, 42, 0.8) !important; } .bg-slate-900\/95 { background-color: rgba(15, 23, 42, 0.95) !important; } .bg-black\/70 { background-color: rgba(0, 0, 0, 0.7) !important; }
+        .bg-emerald-50\/80 { background-color: rgba(236, 253, 245, 0.8) !important; } .bg-emerald-50\/90 { background-color: rgba(236, 253, 245, 0.9) !important; } .bg-rose-50\/80 { background-color: rgba(255, 241, 242, 0.8) !important; } .bg-amber-50\/50 { background-color: rgba(255, 251, 235, 0.5) !important; } .bg-indigo-50\/60 { background-color: rgba(238, 242, 255, 0.6) !important; }
+        .border-slate-200\/60 { border-color: rgba(226, 232, 240, 0.6) !important; } .border-slate-200\/80 { border-color: rgba(226, 232, 240, 0.8) !important; } .border-amber-200\/60 { border-color: rgba(253, 230, 138, 0.6) !important; } .border-indigo-500\/30 { border-color: rgba(99, 102, 241, 0.3) !important; }
+
+        .ios12-fallback .from-amber-400 { background: linear-gradient(90deg, #fbbf24, #f97316) !important; }
+        .ios12-fallback .from-rose-500 { background: linear-gradient(90deg, #f43f5e, #f97316) !important; }
+        .ios12-fallback .from-indigo-500 { background: linear-gradient(90deg, #6366f1, #9333ea) !important; }
+        .ios12-fallback .flex.gap-1\.5 > * { margin-right: 6px; margin-bottom: 6px; }
+        .ios12-fallback .flex.gap-2 > * { margin-right: 8px; margin-bottom: 8px; }
+        .ios12-fallback .flex.gap-3 > * { margin-right: 12px; margin-bottom: 12px; }
+
+        .shrink-0 { flex-shrink: 0 !important; }
+        .rounded-\[32px\] { border-radius: 32px !important; } .rounded-\[10px\] { border-radius: 10px !important; }
+        .text-\[9px\] { font-size: 9px !important; line-height: 13px !important; } .text-\[10px\] { font-size: 10px !important; line-height: 14px !important; } .text-\[11px\] { font-size: 11px !important; line-height: 16px !important; } .text-\[12px\] { font-size: 12px !important; line-height: 16px !important; } .text-\[13px\] { font-size: 13px !important; line-height: 18px !important; } .text-\[15px\] { font-size: 15px !important; line-height: 22px !important; } .text-\[50px\] { font-size: 50px !important; }
+        .w-\[135px\] { width: 135px !important; } .max-w-\[200px\] { max-width: 200px !important; } .h-\[340px\] { height: 340px !important; } .min-h-\[520px\] { min-height: 520px !important; } .p-\[3px\] { padding: 3px !important; }
+        .z-\[55\] { z-index: 55 !important; } .z-\[60\] { z-index: 60 !important; } .z-\[65\] { z-index: 65 !important; } .z-\[70\] { z-index: 70 !important; } .z-\[75\] { z-index: 75 !important; } .z-\[100\] { z-index: 100 !important; }
     </style>
 </head>
 <body class="flex items-start justify-center min-h-screen py-6 px-3 md:px-4 relative overflow-x-hidden select-none transition-colors duration-500" oncontextmenu="return false;">
@@ -165,7 +223,7 @@
         <!-- BÊN PHẢI: Trực tuyến, Bảng Vàng & Tiện ích -->
         <div class="flex items-center space-x-1.5 md:space-x-2 pointer-events-auto">
             <!-- NÚT VỀ S-NOTE 2026 -->
-            <a href="index.html" class="h-9 md:h-10 px-2 md:px-3 bg-white/90 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm flex items-center justify-center text-xs font-black text-blue-600 dark:text-blue-400 space-x-1.5 transition-transform hover:scale-105 z-50" title="Về Sổ tay Lý thuyết">
+            <a href="snote.html" class="h-9 md:h-10 px-2 md:px-3 bg-white/90 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm flex items-center justify-center text-xs font-black text-blue-600 dark:text-blue-400 space-x-1.5 transition-transform hover:scale-105 z-50" title="Về Sổ tay Lý thuyết">
                 <span class="text-base">📚</span> <span class="hidden sm:inline">Sổ Tay</span>
             </a>
             
@@ -1054,14 +1112,19 @@
 
                     connectedRef.on("value", (snap) => {
                         if (snap.val() === true) {
+                            if (this.myUserRef) { try { this.myUserRef.remove(); } catch(e) {} }
+                            const lastUser = JSON.parse(localStorage.getItem('eduMasterLastUser') || "{}");
                             this.myUserRef = onlineUsersRef.push();
                             this.myUserRef.onDisconnect().remove();
                             this.myUserRef.set({
                                 onlineAt: firebase.database.ServerValue.TIMESTAMP,
-                                name: "Đang ở phòng chờ",
-                                className: "",
+                                uid: lastUser.uid || "",
+                                name: (AppCore.studentInfo && AppCore.studentInfo.name) || lastUser.name || "Đang ở phòng chờ",
+                                className: (AppCore.studentInfo && AppCore.studentInfo.class) || lastUser.class || "",
+                                page: "exam",
+                                activity: "Đang luyện EduMaster",
                                 score: 0,
-                                frame: ""
+                                frame: (AppCore.studentInfo && AppCore.studentInfo.frame) || "frame-default"
                             });
                         }
                     });
@@ -1088,17 +1151,95 @@
                         }
                     });
 
-                    PvPEngine.init(); 
+                    PvPEngine.init();
+                    this.watchBroadcast();
+                    this.watchArenaGrading();
                 } catch(e) {
                     console.log("Firebase Error:", e);
                 }
             },
+
+            watchBroadcast() {
+                if (!dbRef || this._watchingBroadcast) return;
+                this._watchingBroadcast = true;
+                dbRef.ref('system_announcement').on('value', (snap) => {
+                    const data = snap.val();
+                    const oldBar = document.getElementById('edumaster-broadcast-bar');
+                    if (!data || !data.id || !data.message) {
+                        if (oldBar) oldBar.remove();
+                        return;
+                    }
+                    const dismissedId = localStorage.getItem('eduMaster_dismissedAnnId');
+                    if (dismissedId === data.id) {
+                        if (oldBar) oldBar.remove();
+                        return;
+                    }
+                    if (oldBar) oldBar.remove();
+
+                    const bar = document.createElement('div');
+                    bar.id = 'edumaster-broadcast-bar';
+                    bar.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:9999;width:92%;max-width:520px;';
+                    bar.innerHTML = `
+                        <div class="bg-slate-900 text-white border-2 border-amber-400 rounded-2xl p-4 shadow-2xl flex items-start space-x-3">
+                            <span class="text-2xl shrink-0">📢</span>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-amber-400">Thông Báo Từ Giáo Viên</span>
+                                    <span class="text-[9px] text-slate-400 font-mono">${Utils.escapeHTML(data.sentAt || '')}</span>
+                                </div>
+                                <p class="text-xs md:text-sm font-bold text-white leading-relaxed break-words">${Utils.escapeHTML(data.message)}</p>
+                                <div class="mt-3 flex justify-end">
+                                    <button type="button" id="btn-dismiss-broadcast" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-black text-[11px] uppercase px-4 py-1.5 rounded-lg shadow transition">Đã đọc ✓</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(bar);
+                    const btnDismiss = document.getElementById('btn-dismiss-broadcast');
+                    if (btnDismiss) {
+                        btnDismiss.onclick = function() {
+                            localStorage.setItem('eduMaster_dismissedAnnId', data.id);
+                            bar.remove();
+                        };
+                    }
+                });
+            },
+
+            watchArenaGrading() {
+                if (!dbRef || this._watchingGrading) return;
+                const lastUser = JSON.parse(localStorage.getItem('eduMasterLastUser') || '{}');
+                if (!lastUser.uid) return;
+                this._watchingGrading = true;
+
+                const notifiedKey = 'eduMasterNotifiedSubs_' + lastUser.uid;
+                dbRef.ref('users/' + lastUser.uid + '/history').on('value', (snap) => {
+                    if (!snap.exists()) return;
+                    const list = Array.isArray(snap.val()) ? snap.val() : Object.values(snap.val() || {});
+                    let seen = [];
+                    try { seen = JSON.parse(localStorage.getItem(notifiedKey) || '[]'); } catch(e) { seen = []; }
+                    let changed = false;
+                    list.forEach(sub => {
+                        if (sub && sub.status === 'PUBLISHED' && seen.indexOf(sub.id) === -1) {
+                            seen.push(sub.id);
+                            changed = true;
+                            Utils.toast(`🎉 Giáo viên đã duyệt bài "${sub.roomName}" — Điểm: ${sub.finalScore}/10`, 'success');
+                        }
+                    });
+                    if (changed) {
+                        try { localStorage.setItem(notifiedKey, JSON.stringify(seen)); } catch(e) {}
+                    }
+                });
+            },
             
             updateProfile(name, className, score = 0, frame = "") {
                 if (this.myUserRef) {
+                    const lastUser = JSON.parse(localStorage.getItem('eduMasterLastUser') || "{}");
                     this.myUserRef.update({ 
+                        uid: lastUser.uid || "",
                         name: name, 
                         className: className, 
+                        page: "exam",
+                        activity: score > 0 ? "Đang làm bài EduMaster" : "Đang luyện EduMaster",
                         score: score, 
                         frame: frame || AppCore.studentInfo.frame || "frame-default" 
                     });
@@ -1107,7 +1248,7 @@
             
             clearProfile() {
                 if (this.myUserRef) {
-                    this.myUserRef.update({ name: "Đang ở phòng chờ", className: "", score: 0, frame: "" });
+                    this.myUserRef.update({ uid: "", name: "Đang ở phòng chờ", className: "", page: "exam", activity: "", score: 0, frame: "" });
                 }
             },
             
@@ -1335,7 +1476,9 @@
             start() {
                 const SRec = window.SpeechRecognition || window.webkitSpeechRecognition;
                 if (!SRec) {
-                    document.getElementById('mic-error-modal').classList.remove('hidden');
+                    const micModal = document.getElementById('mic-error-modal');
+                    if (micModal) micModal.classList.remove('hidden');
+                    else Utils.toast("Thiết bị này không hỗ trợ thu âm trực tiếp trên trình duyệt!", "error");
                     return;
                 }
 
@@ -1388,7 +1531,11 @@
                     };
 
                     this.recognition.onerror = (e) => {
-                        if (e.error === 'not-allowed') document.getElementById('mic-error-modal').classList.remove('hidden');
+                        if (e.error === 'not-allowed') {
+                            const micModal = document.getElementById('mic-error-modal');
+                            if (micModal) micModal.classList.remove('hidden');
+                            else Utils.toast("Vui lòng cấp quyền Micro cho trình duyệt!", "error");
+                        }
                     };
 
                     this.recognition.onend = () => {
@@ -1505,36 +1652,109 @@
                 "survival": { count: 999, minutes: 0, name: "Sinh Tồn 💖"} 
             },
             
-          shopItems: [
+            shopItems: [
                 { id: "frame-default", icon: "https://i.imgur.com/ZQVTFpI.jpg", name: "Tân Binh Ẩn Danh", desc: "Giấu nghề, chờ thời cơ", price: 0 },
-                { id: "frame-elite", icon: "https://i.imgur.com/NvmQwLE.jpg", name: "Sát Thủ Bóng Đêm", desc: "Thoắt ẩn thoắt hiện chốt điểm", price: 50 },
-                { id: "frame-fire", icon: "https://i.imgur.com/i77HY8j.jpg", name: "Hỏa Pháp Sư", desc: "Thiêu rụi mọi đề thi khó", price: 150 },
-                { id: "frame-ice", icon: "https://i.imgur.com/x44DtYT.jpg", name: "Ma Tôn Băng Lãnh", desc: "Lạnh lùng, bách phát bách trúng", price: 450 },
-                { id: "frame-thunder", icon: "https://i.imgur.com/DF0DEKr.jpg", name: "Cận bước chiến thần", desc: "Chớp nhoáng, nộp bài đầu tiên", price: 650 },
-                { id: "frame-legend", icon: "https://i.imgur.com/uyBaQF6.jpg", name: "Độc cô cầu bại", desc: "Kẻ thống trị Bảng Vàng_Mít tờ Sói", price: 800 },
-                { id: "frame-legend-2", icon: "https://i.imgur.com/3hkvyi1.jpg", name: "Thời không", desc: "Học thức trong tầm tay - Vàng bạc là thứ yếu_Đại cao thủ", price: 1200 },
-                { id: "frame-legend-3", icon: "https://i.imgur.com/oiCBDNE.jpg", name: "Biến thân thực thể", desc: "Nguồn tri thức là vũ khí tối thượng - Thách đấu", price: 1500 },
-                { id: "frame-mythic", icon: "https://i.imgur.com/XNtpM48.jpg", name: "Thực Thể Tối Thượng", desc: "Trùm cuối độc tôn vũ trụ", price: 2000 }
+                { id: "frame-elite", icon: "https://i.imgur.com/NvmQwLE.jpg", name: "Sát Thủ Bóng Đêm", desc: "Thoắt ẩn thoắt hiện chốt điểm", price: 500 },
+                { id: "frame-fire", icon: "https://i.imgur.com/i77HY8j.jpg", name: "Hỏa Pháp Sư", desc: "Thiêu rụi mọi đề thi khó", price: 1000 },
+                { id: "frame-ice", icon: "https://i.imgur.com/x44DtYT.jpg", name: "Ma Tôn Băng Lãnh", desc: "Lạnh lùng, bách phát bách trúng", price: 2000 },
+                { id: "frame-thunder", icon: "https://i.imgur.com/DF0DEKr.jpg", name: "Cận bước chiến thần", desc: "Chớp nhoáng, nộp bài đầu tiên", price: 3500},
+                { id: "frame-legend", icon: "https://i.imgur.com/uyBaQF6.jpg", name: "Độc cô cầu bại", desc: "Kẻ thống trị Bảng Vàng_Mít tờ Sói", price: 4500 },
+                { id: "frame-legend-2", icon: "https://i.imgur.com/3hkvyi1.jpg", name: "Thời không", desc: "Học thức trong tầm tay - Vàng bạc là thứ yếu_Đại cao thủ", price: 5500 },
+                { id: "frame-legend-3", icon: "https://i.imgur.com/oiCBDNE.jpg", name: "Biến thân thực thể", desc: "Nguồn tri thức là vũ khí tối thượng - Thách đấu", price: 6500 },
+                { id: "frame-mythic", icon: "https://i.imgur.com/XNtpM48.jpg", name: "Thực Thể Tối Thượng", desc: "Trùm cuối độc tôn vũ trụ", price: 8000 }
             ],
             cheatCount: 0,
             deferredPrompt: null,
 
+            // KHÔI PHỤC LẠI HÀM NÀY, NÓ RẤT QUAN TRỌNG
             getProfileId(name, className) {
+                const lastUser = JSON.parse(localStorage.getItem('eduMasterLastUser') || "{}");
+                if (lastUser.uid) return lastUser.uid;
                 if(!name || !className) return "guest";
                 return (name + "_" + className).toLowerCase().replace(/\s+/g, "");
             },
 
             init() {
+                const lastUser = JSON.parse(localStorage.getItem('eduMasterLastUser') || "{}");
+                if (!lastUser.uid) {
+                    Utils.toast("Vui lòng đăng nhập tại Cổng Hệ Thống để đồng bộ dữ liệu!", "error");
+                    document.body.innerHTML = `<div class="flex items-center justify-center h-screen bg-slate-900 flex-col"><span class="text-6xl animate-spin mb-4">🌀</span><h2 class="text-xl font-bold text-white mb-2">Đang tải dữ liệu Cloud...</h2><p class="text-sm text-slate-400">Bạn cần làm thủ tục định danh tại Cổng EduMaster.</p></div>`;
+                    setTimeout(() => window.location.href = 'index.html', 1500);
+                    return;
+                }
+
                 AudioEngine.initSpeed();
                 PresenceEngine.init();
-                this.loadSavedProfile();
+
+                const originalFetchData = this.fetchData.bind(this);
+                this.fetchData = async () => {
+                    await originalFetchData();
+
+                    this.studentInfo.name = lastUser.name || "Học Sinh";
+                    this.studentInfo.class = lastUser.class || "Chưa rõ";
+                    this.studentInfo.grade = lastUser.grade || (this.availableGrades.length > 0 ? this.availableGrades[0] : "Lớp 10");
+
+                    const pid = lastUser.uid;
+                    const allProfiles = JSON.parse(localStorage.getItem('eduMasterProfiles') || "{}");
+                    const prof = allProfiles[pid] || {};
+
+                    this.studentInfo.coins = prof.coins || 0;
+                    this.studentInfo.frame = prof.frame || "frame-default";
+                    this.studentInfo.unlockedFrames = prof.unlockedFrames || ["frame-default"];
+
+                    const coinBadge = document.getElementById('coin-balance');
+                    if (coinBadge) coinBadge.innerText = this.studentInfo.coins;
+
+                    const infoScreen = document.getElementById('info-screen');
+                    const subjectScreen = document.getElementById('subject-screen');
+                    if (infoScreen) infoScreen.classList.add('hidden');
+                    if (subjectScreen) subjectScreen.classList.remove('hidden');
+
+                    this.applyFrame();
+                    this.renderSubjectScreen();
+                    this.renderHistory();
+                    this.updateMistakeBadge();
+
+                    // Đồng bộ Khối, Vàng và Khung Avatar mới nhất từ Firebase
+                    try {
+                        if (window.firebase && firebase.apps.length > 0) {
+                            firebase.database().ref('users/' + pid).once('value').then(snap => {
+                                if (snap.exists()) {
+                                    const cloud = snap.val();
+                                    let needRerenderSubjects = false;
+
+                                    if (cloud.grade && String(cloud.grade).trim() !== "") {
+                                        const formattedGrade = String(cloud.grade).toLowerCase().includes('lớp') || String(cloud.grade).toLowerCase().includes('khối')
+                                            ? String(cloud.grade).trim()
+                                            : `Khối ${String(cloud.grade).trim()}`;
+                                        if (this.studentInfo.grade !== formattedGrade) {
+                                            this.studentInfo.grade = formattedGrade;
+                                            needRerenderSubjects = true;
+                                        }
+                                        // Cập nhật lại grade vào eduMasterLastUser để dùng chung cho các trang khác
+                                        lastUser.grade = formattedGrade;
+                                        localStorage.setItem('eduMasterLastUser', JSON.stringify(lastUser));
+                                    }
+
+                                    if (typeof cloud.coins === 'number') this.studentInfo.coins = cloud.coins;
+                                    if (cloud.frame) this.studentInfo.frame = cloud.frame;
+                                    if (Array.isArray(cloud.unlockedFrames)) this.studentInfo.unlockedFrames = cloud.unlockedFrames;
+                                    if (coinBadge) coinBadge.innerText = this.studentInfo.coins;
+
+                                    this.applyFrame();
+                                    if (needRerenderSubjects) this.renderSubjectScreen();
+                                }
+                            });
+                        }
+                    } catch (e) {}
+                };
+
                 this.checkSavedSession();
                 this.fetchAnnouncement();
-                this.updateMistakeBadge();
-                
+
                 document.addEventListener("visibilitychange", this.handleAntiCheat.bind(this));
                 document.addEventListener("fullscreenchange", this.handleAntiCheatFullscreen.bind(this));
-                
+
                 window.addEventListener('beforeinstallprompt', (e) => {
                     e.preventDefault();
                     this.deferredPrompt = e;
@@ -1660,10 +1880,21 @@
                     localStorage.setItem('eduMasterLastUser', JSON.stringify({
                         name: this.studentInfo.name,
                         class: this.studentInfo.class,
-                        grade: this.studentInfo.grade
+                        grade: this.studentInfo.grade,
+                        uid: JSON.parse(localStorage.getItem('eduMasterLastUser') || "{}").uid // Giữ lại uid
                     }));
                     
                     document.getElementById('coin-balance').innerText = this.studentInfo.coins;
+
+                    // Đồng bộ lên Firebase Realtime Database
+                    const lastUser = JSON.parse(localStorage.getItem('eduMasterLastUser') || "{}");
+                    if (lastUser && lastUser.uid && window.firebase) {
+                        firebase.database().ref('users/' + lastUser.uid).update({
+                            coins: this.studentInfo.coins,
+                            frame: this.studentInfo.frame,
+                            unlockedFrames: this.studentInfo.unlockedFrames
+                        });
+                    }
                 } catch(e) {}
             },
 
@@ -1794,26 +2025,46 @@
             if (modal) modal.classList.add('hidden');
         },
             renderHistory() {
-                const historyList = document.getElementById('recent-history-list');
-                if (!historyList) return;
-                
-                if (this.studentInfo.history.length === 0) {
-                    historyList.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">Chưa có dữ liệu làm bài.</p>`;
+                const section = document.getElementById('history-section');
+                const container = document.getElementById('history-container');
+                if (!section || !container) return;
+
+                let history = [];
+                try {
+                    const pid = this.getProfileId(this.studentInfo.name, this.studentInfo.class);
+                    history = JSON.parse(localStorage.getItem(`eduMasterHistory_${pid}`) || "[]");
+                    if (!Array.isArray(history)) history = [];
+                } catch (e) {
+                    history = [];
+                }
+
+                if (history.length === 0) {
+                    section.classList.add('hidden');
+                    container.innerHTML = "";
                     return;
                 }
 
-                historyList.innerHTML = this.studentInfo.history.map(item => `
-                    <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-600 mb-2">
-                        <div>
-                            <p class="font-bold text-xs text-slate-700 dark:text-slate-200">${item.subject} (${item.duration} phút) - Mã đề: ${item.code}</p>
-                            <p class="text-[10px] text-slate-500 mt-0.5">🕒 ${item.date} • ${item.timeStr}</p>
+                section.classList.remove('hidden');
+                container.innerHTML = history.map(item => {
+                    const coinsVal = Number(item.coins) || 0;
+                    const coinBadge = coinsVal > 0
+                        ? `<p class="text-[10px] font-bold text-amber-500 flex items-center justify-end space-x-1">+${coinsVal} <img src="https://cdn-icons-png.flaticon.com/128/1490/1490853.png" class="w-3 h-3"></p>`
+                        : (coinsVal < 0
+                            ? `<p class="text-[10px] font-bold text-rose-500 flex items-center justify-end space-x-1">${coinsVal} <img src="https://cdn-icons-png.flaticon.com/128/1490/1490853.png" class="w-3 h-3"></p>`
+                            : `<p class="text-[10px] font-semibold text-slate-400">0 Vàng</p>`);
+
+                    return `
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-white/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 shadow-sm">
+                        <div class="min-w-0 pr-2">
+                            <p class="font-bold text-xs text-slate-800 dark:text-slate-100 truncate">${Utils.escapeHTML(item.subject || "Bài luyện tập")}</p>
+                            <p class="text-[10px] text-slate-500 mt-0.5">🕒 ${Utils.escapeHTML(item.date || "")} ${item.time ? '• ' + Utils.escapeHTML(item.time) : ''}</p>
                         </div>
-                        <div class="text-right">
-                            <p class="font-black text-sm text-emerald-600 dark:text-emerald-400">${item.score} đ</p>
-                            <p class="text-[10px] font-bold text-amber-500 flex items-center justify-end space-x-1">+${item.coins} <img src="https://cdn-icons-png.flaticon.com/128/1490/1490853.png" class="w-3 h-3"></p>
+                        <div class="text-right shrink-0">
+                            <p class="font-black text-sm text-emerald-600 dark:text-emerald-400">${Utils.escapeHTML(String((item.score !== undefined && item.score !== null) ? item.score : 0))} đ</p>
+                            ${coinBadge}
                         </div>
-                    </div>
-                `).join('');
+                    </div>`;
+                }).join('');
             },
 
             forgetProfile() {
@@ -1839,9 +2090,8 @@
                 AudioEngine.play('click');
                 PresenceEngine.clearProfile();
                 this.clearSessionAndStartNew();
-                document.getElementById('subject-screen').classList.add('hidden');
-                document.getElementById('info-screen').classList.remove('hidden');
-                window.scrollTo(0, 0);
+                // Đá văng ra Cổng Đăng Nhập Hệ Thống để bảo mật Vàng
+                window.location.href = 'index.html'; 
             },
 
             updateMistakeBadge() {
@@ -3288,6 +3538,29 @@
                 const saveStatusEl = document.getElementById('save-status');
                 saveStatusEl.innerHTML = `<span class="text-blue-600 flex items-center justify-center space-x-2"><svg class="w-4 h-4 animate-spin text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Đang tải kết quả lên hệ thống...</span>`;
 
+                // 1. Đẩy song song kết quả gọn nhẹ lên Firebase (nhánh exam_results) cho Admin xem Realtime
+                try {
+                    if (window.firebase && firebase.database) {
+                        const examResultRecord = {
+                            name: AppCore.studentInfo.name || "Học sinh",
+                            className: AppCore.studentInfo.class || "---",
+                            grade: AppCore.studentInfo.grade || "---",
+                            subject: title,
+                            score: this.isSurvival ? cor : sc,
+                            isSurvival: Boolean(this.isSurvival),
+                            total: `${cor}/${this.isSurvival ? (cor + wro) : tot}`,
+                            timeUsed: time,
+                            cheatCount: AppCore.cheatCount || 0,
+                            submittedAt: new Date().toLocaleTimeString('vi-VN') + " " + new Date().toLocaleDateString('vi-VN'),
+                            timestamp: firebase.database.ServerValue.TIMESTAMP
+                        };
+                        firebase.database().ref('exam_results').push(examResultRecord);
+                    }
+                } catch (fbErr) {
+                    console.warn("Lỗi đẩy kết quả EduMaster lên Firebase:", fbErr);
+                }
+
+                // 2. Giữ nguyên luồng gửi dự phòng về Google Sheets (Ket_Qua)
                 const p = new URLSearchParams({
                     action: "saveResult", name: AppCore.studentInfo.name, grade: AppCore.studentInfo.grade, className: AppCore.studentInfo.class,
                     subject: title, score: this.isSurvival ? cor : sc, total: `${cor}/${this.isSurvival ? (cor + wro) : tot}`,
@@ -3295,7 +3568,7 @@
                 });
 
                 fetch(`${API_URL}?${p.toString()}`, { method: 'POST', mode: 'no-cors' })
-                    .then(() => { saveStatusEl.innerHTML = `<span class="text-emerald-600 font-bold flex items-center justify-center space-x-1.5"><img src="https://cdn-icons-png.flaticon.com/128/1484/1484088.png" class="w-4 h-4"> Đã lưu kết quả thành công vào sheet Ket_Qua!</span>`; })
+                    .then(() => { saveStatusEl.innerHTML = `<span class="text-emerald-600 font-bold flex items-center justify-center space-x-1.5"><img src="https://cdn-icons-png.flaticon.com/128/1484/1484088.png" class="w-4 h-4"> Đã lưu kết quả về Admin & Google Sheets!</span>`; })
                     .catch(() => {
                         new Image().src = `${API_URL}?${p.toString()}`;
                         saveStatusEl.innerHTML = `<span class="text-emerald-600 font-bold flex items-center justify-center space-x-1.5"><img src="https://cdn-icons-png.flaticon.com/128/1484/1484088.png" class="w-4 h-4"> ✓ Đã gửi kết quả về hệ thống!</span>`;
