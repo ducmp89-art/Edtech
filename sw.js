@@ -1,6 +1,6 @@
 // Đổi tên phiên bản này mỗi khi bạn cập nhật code (VD: v2, v3, v1.1...)
 // Việc đổi tên này sẽ kích hoạt cơ chế xóa toàn bộ cache cũ trên máy học sinh.
-const CACHE_NAME = 'edumaster-cache-v1.0';
+const CACHE_NAME = 'edumaster-cache-v1.4';
 
 // Danh sách các file khung giao diện cần lưu cache (App Shell)
 const ASSETS_TO_CACHE = [
