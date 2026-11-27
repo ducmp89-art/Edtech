@@ -11,173 +11,160 @@
     <meta name="theme-color" content="#0f172a">
     <title>EduMaster | Cổng Đăng Nhập Tập Trung</title>
     
-    <!-- CSS TĨNH BIÊN DỊCH SẴN - TƯƠNG THÍCH TUYỆT ĐỐI MỌI TRÌNH DUYỆT -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    
+    <!-- FIX RỦI RO 1: Đưa Script fallback từ Arena sang Index -->
+    <script>
+        (function() {
+            var isOldIOS = /iP(ad|hone|od).+(OS 1[0-2]_|Version\/1[0-2])/i.test(navigator.userAgent);
+            if (!isOldIOS) {
+                var twScript = document.createElement('script');
+                twScript.src = 'https://cdn.tailwindcss.com';
+                twScript.onload = function() {
+                    if (window.tailwind) {
+                        window.tailwind.config = { corePlugins: { preflight: false } };
+                    }
+                };
+                document.head.appendChild(twScript);
+            } else {
+                document.documentElement.classList.add('ios12-fallback');
+                console.log("Kích hoạt chế độ Fallback cho iOS 12 (Index)");
+            }
+        })();
+    </script>
+
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
     <style>
-        * { 
-            font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            -webkit-font-smoothing: antialiased; 
-            box-sizing: border-box;
-        }
-        
-        /* BẢO ĐẢM CUỘN TỰ NHIÊN TRÊN ANDROID & IOS */
-        html, body {
-            min-height: 100%;
-            background-color: #0f172a;
-            color: #f8fafc;
-        }
-        
-        body { 
-            min-height: 100vh;
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-orient: vertical;
-            -webkit-box-direction: normal;
-            -webkit-flex-direction: column;
-            flex-direction: column;
-            -webkit-box-align: center;
-            -webkit-align-items: center;
-            align-items: center;
-            overflow-x: hidden;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
+        .bg-slate-900 { background-color: #0f172a !important; }
+        .bg-slate-800 { background-color: #1e293b !important; }
+        .bg-slate-950\/90, .bg-\[\#020617\]\/90 { background-color: rgba(2, 6, 23, 0.9) !important; }
+        .border-slate-700 { border-color: #334155 !important; }
+        .border-slate-700\/50 { border-color: rgba(51, 65, 85, 0.5) !important; }
+        .text-slate-400 { color: #94a3b8 !important; }
+        .text-slate-500 { color: #64748b !important; }
+        .text-\[11px\] { font-size: 11px !important; line-height: 16px !important; }
 
-        /* FALLBACKS & TIỀN TỐ WEBKIT CHO IOS 12 */
-        .hidden { display: none !important; }
-        .flex { display: -webkit-box !important; display: -webkit-flex !important; display: -ms-flexbox !important; display: flex !important; }
+        * { font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; box-sizing: border-box; }
+        html, body { min-height: 100%; height: -webkit-fill-available; background-color: #0f172a; color: #f8fafc; }
+        body { min-height: 100vh; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         
+        .hidden { display: none !important; }
         .glass-card { 
-            background: rgba(30, 41, 59, 0.7); /* Fallback */
-            background: rgba(255, 255, 255, 0.04); 
-            -webkit-backdrop-filter: blur(20px);
+            background: rgba(30, 41, 59, 0.7); 
+            -webkit-backdrop-filter: blur(20px); 
             backdrop-filter: blur(20px); 
             border: 1px solid rgba(255, 255, 255, 0.1); 
         }
         .glass-card:hover { 
-            background: rgba(255, 255, 255, 0.08); 
-            border-color: rgba(255, 255, 255, 0.2); 
-            -webkit-transform: translateY(-5px);
-            transform: translateY(-5px); 
-            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5); 
+            background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.2); -webkit-transform: translateY(-5px); transform: translateY(-5px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5); 
         }
-
-        .bg-grid { 
-            background-size: 40px 40px; 
-            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px), 
-                              linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px); 
-        }
-
-        /* TEXT GRADIENT CHUẨN SAFARI VÀ PC */
-        .gradient-title {
-            background: -webkit-linear-gradient(left, #ffffff, #94a3b8);
-            background: linear-gradient(to right, #ffffff, #94a3b8);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            color: #ffffff;
-        }
-
-        /* TƯƠNG THÍCH MÀU NỀN VÀ KHUNG SLATE CHO IOS 12 */
-        .bg-slate-900 { background-color: #0f172a !important; }
-        .bg-slate-800 { background-color: #1e293b !important; }
-        .bg-slate-800\/50 { background-color: rgba(30, 41, 59, 0.5) !important; }
-        .bg-slate-950\/80 { background-color: rgba(2, 6, 23, 0.85) !important; }
-        .border-slate-700 { border-color: #334155 !important; }
-        .text-slate-400 { color: #94a3b8 !important; }
-        .text-slate-500 { color: #64748b !important; }
-        .text-slate-600 { color: #475569 !important; }
-
-        input {
-            -webkit-appearance: none;
-            appearance: none;
-            font-size: 16px !important; /* Chống tự phóng to màn hình trên iOS */
-        }
-
-        .modal-enter { 
-            -webkit-animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
-        }
-        @-webkit-keyframes modalIn { 
-            from { opacity: 0; -webkit-transform: scale(0.95) translateY(10px); } 
-            to { opacity: 1; -webkit-transform: scale(1) translateY(0); } 
-        }
-        @keyframes modalIn { 
-            from { opacity: 0; transform: scale(0.95) translateY(10px); } 
-            to { opacity: 1; transform: scale(1) translateY(0); } 
-        }
+        
+        .backdrop-blur-sm { -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+        .bg-grid { background-size: 40px 40px; background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px); }
+        .gradient-title { background: linear-gradient(to right, #ffffff, #94a3b8); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        input { -webkit-appearance: none; appearance: none; font-size: 16px !important; }
+        .modal-enter { -webkit-animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @-webkit-keyframes modalIn { from { opacity: 0; -webkit-transform: scale(0.95) translateY(10px); } to { opacity: 1; -webkit-transform: scale(1) translateY(0); } }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        
+        .tab-btn { border-bottom: 2px solid transparent; color: #64748b; }
+        .tab-btn.active { border-bottom-color: #22c55e; color: #22c55e; font-weight: 800; }
     </style>
 </head>
 <body class="relative">
-    
-    <!-- Background Vô Cực -->
+
     <div class="fixed inset-0 bg-grid pointer-events-none"></div>
     <div class="fixed top-1/4 left-1/4 w-96 h-96 bg-blue-600 opacity-20 rounded-full filter blur-3xl pointer-events-none"></div>
     <div class="fixed bottom-1/4 right-1/4 w-96 h-96 bg-indigo-600 opacity-20 rounded-full filter blur-3xl pointer-events-none"></div>
 
-    <!-- Đã sửa: Thay gap-3 bằng space-y-3 để tương thích iOS 12 -->
     <div id="toast-container" class="fixed top-6 right-6 z-50 flex flex-col space-y-3 pointer-events-none"></div>
 
-    <!-- KHUNG CHỨA TRUNG TÂM (TỰ CĂN GIỮA TRÊN PC, CUỘN MƯỢT TRÊN ANDROID) -->
+    <!-- KHUNG CHỨA TRUNG TÂM -->
     <div class="relative z-10 w-full max-w-4xl p-4 sm:p-6 my-auto pt-8 pb-16 md:py-12">
-        <!-- Logo & Slogan -->
         <div class="text-center mb-8 md:mb-12">
             <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white text-3xl font-black shadow-lg mb-4">⚡</div>
             <h1 class="text-3xl md:text-4xl font-black uppercase tracking-widest gradient-title">EduMaster 2025</h1>
-            <p class="text-slate-400 mt-2 font-medium tracking-wide text-xs sm:text-sm">HỆ SINH THÁI KHẢO THÍ & ĐÁNH GIÁ NĂNG LỰC TOÀN DIỆN</p>
+            <p class="text-slate-400 mt-2 font-medium tracking-wide text-xs sm:text-sm">HỆ THỐNG ĐỊNH DANH HỌC SINH ĐÁM MÂY</p>
         </div>
 
-        <!-- Khối Phân Quyền Đăng Nhập -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto" id="role-selection">
-            <!-- Dành cho Học Sinh -->
-            <button onclick="Portal.showStudentLogin()" class="glass-card rounded-3xl p-6 sm:p-8 text-left transition-all duration-300 group relative overflow-hidden focus:outline-none">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            <!-- Nút Mở Form Học Sinh -->
+            <button onclick="Portal.showStudentModal()" class="glass-card rounded-3xl p-6 sm:p-8 text-left transition-all duration-300 group relative overflow-hidden focus:outline-none">
                 <div class="w-14 h-14 bg-green-500 bg-opacity-20 text-green-400 rounded-2xl flex items-center justify-center text-3xl mb-6 border border-green-500 border-opacity-30">🎓</div>
                 <h2 class="text-xl sm:text-2xl font-black text-white mb-2 uppercase tracking-wide">Dành cho Học Sinh</h2>
-                <p class="text-slate-400 text-xs sm:text-sm leading-relaxed mb-6 font-medium">Truy cập Sảnh chờ Live Arena, tham gia ca thi, luyện tập tự do và tra cứu bảng điểm cá nhân.</p>
-                <!-- Đã sửa: Dùng translate-x-2 thay vì group-hover:gap-2 -->
-                <div class="flex items-center text-green-400 text-sm font-bold uppercase tracking-wider transition-all">Vào Sảnh Chờ <span class="ml-1 text-lg transition-transform duration-300 transform group-hover:translate-x-2">→</span></div>
+                <p class="text-slate-400 text-xs sm:text-sm leading-relaxed mb-6 font-medium">Đăng ký hoặc Đăng nhập để lưu trữ Vàng, vật phẩm và lịch sử làm bài.</p>
+                <div class="flex items-center text-green-400 text-sm font-bold uppercase tracking-wider transition-all">Vào Cổng Đăng Nhập <span class="ml-1 text-lg transition-transform duration-300 transform group-hover:translate-x-2">→</span></div>
             </button>
 
-            <!-- Dành cho Giáo Viên -->
-            <button onclick="Portal.showAdminLogin()" class="glass-card rounded-3xl p-6 sm:p-8 text-left transition-all duration-300 group relative overflow-hidden focus:outline-none">
+            <!-- Nút Mở Form Quản Trị -->
+            <button onclick="Portal.showAdminModal()" class="glass-card rounded-3xl p-6 sm:p-8 text-left transition-all duration-300 group relative overflow-hidden focus:outline-none">
                 <div class="w-14 h-14 bg-blue-500 bg-opacity-20 text-blue-400 rounded-2xl flex items-center justify-center text-3xl mb-6 border border-blue-500 border-opacity-30">👨‍🏫</div>
                 <h2 class="text-xl sm:text-2xl font-black text-white mb-2 uppercase tracking-wide">Dành cho Giáo Viên</h2>
-                <p class="text-slate-400 text-xs sm:text-sm leading-relaxed mb-6 font-medium">Truy cập Trung tâm Quản trị, tạo đề thi, cấu hình ca thi, giám sát trực tuyến và chấm bài tự luận.</p>
-                <!-- Đã sửa: Dùng translate-x-2 thay vì group-hover:gap-2 -->
+                <p class="text-slate-400 text-xs sm:text-sm leading-relaxed mb-6 font-medium">Truy cập Trung tâm Quản trị, cấu hình ca thi, chấm bài và phê duyệt học sinh.</p>
                 <div class="flex items-center text-blue-400 text-sm font-bold uppercase tracking-wider transition-all">Vào Quản Trị <span class="ml-1 text-lg transition-transform duration-300 transform group-hover:translate-x-2">→</span></div>
             </button>
         </div>
     </div>
 
-    <!-- MODAL 1: HỌC SINH (KHÓA ẨN MẶC ĐỊNH BẰNG INLINE STYLE) -->
-    <div id="modal-student" style="display: none;" class="fixed inset-0 bg-slate-950/80 z-50 items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-slate-900 border border-slate-700 rounded-3xl p-6 sm:p-8 w-full max-w-md shadow-2xl relative">
-            <button onclick="Portal.closeModals()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition">✕</button>
-            <div class="text-center mb-6">
-                <div class="w-16 h-16 bg-green-500 bg-opacity-20 text-green-400 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 border border-green-500 border-opacity-30">🎓</div>
-                <h3 class="text-xl font-black text-white uppercase tracking-wider">Định danh Thí sinh</h3>
-                <p class="text-xs text-slate-400 mt-2 font-medium">Hệ thống sẽ ghi nhận thông tin này vào bài làm.</p>
+    <!-- MODAL 1: HỌC SINH (AUTH) -->
+    <div id="modal-student" style="display: none;" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-50 items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-900 border border-slate-700/50 rounded-3xl p-6 sm:p-8 w-full max-w-md shadow-2xl relative overflow-hidden">
+            <button onclick="Portal.closeModals()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition z-20">✕</button>
+            
+            <div class="flex mb-6 border-b border-slate-700">
+                <button onclick="Portal.switchAuthTab('login')" id="tab-login" class="flex-1 pb-3 text-sm font-bold uppercase tracking-widest tab-btn active transition">Đăng Nhập</button>
+                <button onclick="Portal.switchAuthTab('register')" id="tab-register" class="flex-1 pb-3 text-sm font-bold uppercase tracking-widest tab-btn transition">Đăng Ký</button>
             </div>
-            <div class="space-y-4 mb-8">
+
+            <!-- FORM ĐĂNG NHẬP -->
+            <div id="form-login" class="space-y-4 mb-6">
                 <div>
-                    <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Họ và Tên</label>
-                    <input type="text" id="std-name" placeholder="Nguyễn Văn A" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3.5 outline-none focus:border-green-500 transition placeholder-slate-600 font-bold text-base" onkeypress="if(event.key === 'Enter') document.getElementById('std-class').focus()">
+                    <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Tài Khoản (SĐT / Mã HS)</label>
+                    <input type="text" id="log-username" placeholder="Ví dụ: 0987654321" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 outline-none focus:border-green-500 transition font-bold" onkeypress="if(event.key === 'Enter') document.getElementById('log-password').focus()">
                 </div>
                 <div>
-                    <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Lớp</label>
-                    <input type="text" id="std-class" placeholder="Ví dụ: 12A1" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3.5 outline-none focus:border-green-500 transition placeholder-slate-600 font-bold uppercase text-base" onkeypress="if(event.key === 'Enter') Portal.enterArena()">
+                    <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Mật khẩu</label>
+                    <input type="password" id="log-password" placeholder="••••••••" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 outline-none focus:border-green-500 transition font-bold" onkeypress="if(event.key === 'Enter') AuthEngine.login()">
                 </div>
+                <button onclick="AuthEngine.login()" id="btn-login" class="w-full bg-green-600 hover:bg-green-500 text-white font-black py-3.5 rounded-xl transition uppercase tracking-widest shadow-lg mt-2 flex items-center justify-center space-x-2"><span>🚀</span> <span>Vào Hệ Thống</span></button>
             </div>
-            <button onclick="Portal.enterArena()" class="w-full bg-green-600 hover:bg-green-500 text-white font-black py-4 rounded-xl transition uppercase tracking-widest shadow-lg active:scale-95">Mở Sảnh Chờ Arena</button>
+
+            <!-- FORM ĐĂNG KÝ (ẨN MẶC ĐỊNH) -->
+            <div id="form-register" class="space-y-3 mb-6 hidden">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Họ Tên</label>
+                        <input type="text" id="reg-name" placeholder="Nguyễn Văn A" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 outline-none focus:border-green-500 transition font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Lớp</label>
+                        <input type="text" id="reg-class" placeholder="12A1" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 outline-none focus:border-green-500 transition font-bold uppercase">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Khối (chỉ ghi số)</label>
+                    <input type="text" id="reg-grade" placeholder="12" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 outline-none focus:border-green-500 transition font-bold">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Tài Khoản (Viết liền không dấu)</label>
+                    <input type="text" id="reg-username" placeholder="anhnguyen123" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 outline-none focus:border-green-500 transition font-bold lowercase">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Mật khẩu (Tối thiểu 6 ký tự)</label>
+                    <input type="password" id="reg-password" placeholder="••••••••" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 outline-none focus:border-green-500 transition font-bold">
+                </div>
+                <button onclick="AuthEngine.register()" id="btn-register" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-3.5 rounded-xl transition uppercase tracking-widest shadow-lg mt-2 flex items-center justify-center space-x-2"><span>📝</span> <span>Tạo Tài Khoản</span></button>
+            </div>
         </div>
     </div>
 
-    <!-- MODAL 2: QUẢN TRỊ (KHÓA ẨN MẶC ĐỊNH BẰNG INLINE STYLE) -->
-    <div id="modal-admin" style="display: none;" class="fixed inset-0 bg-slate-950/80 z-50 items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+    <!-- MODAL 2: QUẢN TRỊ (Giữ nguyên) -->
+    <div id="modal-admin" style="display: none;" class="fixed inset-0 bg-[#020617]/90 backdrop-blur-sm z-50 items-center justify-center p-4 opacity-0 transition-opacity duration-300">
         <div class="bg-slate-900 border border-slate-700 rounded-3xl p-6 sm:p-8 w-full max-w-md shadow-2xl relative">
             <button onclick="Portal.closeModals()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition">✕</button>
             <div class="text-center mb-6">
@@ -195,21 +182,27 @@
         </div>
     </div>
 
-    <!-- HỆ THỐNG LOGIC ĐIỀU HƯỚNG -->
+    <!-- LOGIC ỨNG DỤNG & FIREBASE DATABASE AUTH -->
     <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCHLTyguPN_0SooiyTzU_D6ZaGYXLi2nBE",
+            databaseURL: "https://edumaster-quiz-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "edumaster-quiz"
+        };
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+
         const Utils = {
             toast: (msg, type = 'info') => {
                 const c = document.getElementById('toast-container');
                 const t = document.createElement('div');
-                const col = type === 'error' ? 'bg-red-600 border-red-500' : 'bg-green-600 border-green-500';
-                
-                // Đã sửa: Thay gap-2 bằng space-x-2
+                const col = type === 'error' ? 'bg-red-600 border-red-500' : (type === 'info' ? 'bg-blue-600 border-blue-500' : 'bg-green-600 border-green-500');
                 t.className = `flex items-center space-x-2 ${col} text-white px-5 py-3.5 rounded-2xl shadow-2xl border text-sm font-bold transition-all transform opacity-100`;
-                
-                t.innerHTML = `<span>${type === 'error' ? '⚠️' : '✅'}</span><span>${msg}</span>`;
+                t.innerHTML = `<span>${type === 'error' ? '⚠️' : (type === 'info' ? 'ℹ️' : '✅')}</span><span>${msg}</span>`;
                 c.appendChild(t);
                 
-                // Tương thích mượt mà cho cả iOS 12 và trình duyệt hiện đại
                 if (typeof t.animate === 'function') {
                     t.animate([{ transform: 'translateY(-20px) scale(0.9)', opacity: 0 }, { transform: 'translateY(0) scale(1)', opacity: 1 }], { duration: 300 });
                     setTimeout(() => { 
@@ -218,79 +211,58 @@
                             a.onfinish = () => t.remove(); 
                         } catch(e) { t.remove(); }
                     }, 3000);
-                } else {
-                    setTimeout(() => { t.remove(); }, 3000);
-                }
+                } else { setTimeout(() => { t.remove(); }, 3000); }
             }
         };
 
+        const StorageUtil = {
+            get(key) { try { return JSON.parse(localStorage.getItem(key)); } catch(e) { return null; } },
+            set(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
+        };
+
         const Portal = {
-            init() {
-                const lastUser = JSON.parse(localStorage.getItem('eduMasterLastUser'));
-                if (lastUser && lastUser.name && lastUser.class) {
-                    const nameEl = document.getElementById('std-name');
-                    const classEl = document.getElementById('std-class');
-                    if (nameEl) nameEl.value = lastUser.name;
-                    if (classEl) classEl.value = lastUser.class;
+            switchAuthTab(tab) {
+                document.getElementById('tab-login').classList.remove('active');
+                document.getElementById('tab-register').classList.remove('active');
+                document.getElementById('form-login').classList.add('hidden');
+                document.getElementById('form-register').classList.add('hidden');
+
+                if(tab === 'login') {
+                    document.getElementById('tab-login').classList.add('active');
+                    document.getElementById('form-login').classList.remove('hidden');
+                } else {
+                    document.getElementById('tab-register').classList.add('active');
+                    document.getElementById('form-register').classList.remove('hidden');
                 }
             },
-
-            showStudentLogin() {
+            showStudentModal() {
                 const m = document.getElementById('modal-student');
-                m.style.display = 'flex';
-                m.classList.remove('hidden');
-                setTimeout(() => {
-                    m.classList.remove('opacity-0');
-                    if (m.firstElementChild) m.firstElementChild.classList.add('modal-enter');
-                    const input = document.getElementById('std-name');
-                    if (input) input.focus();
-                }, 20);
+                m.style.display = 'flex'; m.classList.remove('hidden');
+                document.getElementById('log-username').focus();
+                setTimeout(() => { m.classList.remove('opacity-0'); m.firstElementChild.classList.add('modal-enter'); }, 20);
             },
-
-            showAdminLogin() {
+            showAdminModal() {
                 const m = document.getElementById('modal-admin');
-                m.style.display = 'flex';
-                m.classList.remove('hidden');
-                setTimeout(() => {
-                    m.classList.remove('opacity-0');
-                    if (m.firstElementChild) m.firstElementChild.classList.add('modal-enter');
-                    const input = document.getElementById('adm-pass');
-                    if (input) input.focus();
-                }, 20);
+                m.style.display = 'flex'; m.classList.remove('hidden');
+                document.getElementById('adm-pass').focus();
+                setTimeout(() => { m.classList.remove('opacity-0'); m.firstElementChild.classList.add('modal-enter'); }, 20);
             },
-
             closeModals() {
+                if(document.activeElement) document.activeElement.blur();
                 ['modal-student', 'modal-admin'].forEach(id => {
                     const m = document.getElementById(id);
                     if (!m) return;
                     m.classList.add('opacity-0');
                     if (m.firstElementChild) m.firstElementChild.classList.remove('modal-enter');
-                    setTimeout(() => { 
-                        m.classList.add('hidden'); 
-                        m.style.display = 'none';
-                    }, 300);
+                    setTimeout(() => { m.classList.add('hidden'); m.style.display = 'none'; }, 300);
                 });
             },
-
-            enterArena() {
-                const name = document.getElementById('std-name').value.trim();
-                const cls = document.getElementById('std-class').value.trim().toUpperCase();
-                
-                if (!name || !cls) return Utils.toast("Vui lòng điền đủ Họ tên và Lớp!", "error");
-                
-                localStorage.setItem('eduMasterLastUser', JSON.stringify({ name: name, class: cls }));
-                
-                document.body.style.opacity = '0';
-                document.body.style.transition = 'opacity 0.4s ease';
-                setTimeout(() => { window.location.href = 'arena.html'; }, 400);
-            },
-
             enterAdmin() {
                 const pass = document.getElementById('adm-pass').value.trim();
-                if (pass === 'admin') { 
-                    localStorage.setItem('eduMasterAdminAuth', 'true');
+                // "edumaster2026"
+                if (btoa(pass) === 'ZWR1bWFzdGVyMjAyNg==') { 
+                    try { sessionStorage.setItem('edumaster_admin_auth', 'true'); } catch(e){}
                     document.body.style.opacity = '0';
-                    document.body.style.transition = 'opacity 0.4s ease';
                     setTimeout(() => { window.location.href = 'admin.html'; }, 400);
                 } else {
                     Utils.toast("Sai mật khẩu quản trị!", "error");
@@ -299,28 +271,153 @@
             }
         };
 
-        window.onload = Portal.init;
-    </script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('PWA sẵn sàng'))
-                    .catch(err => console.error('Lỗi SW:', err));
-            });
-        }
+        const AuthEngine = {
+            async register() {
+                const name = document.getElementById('reg-name').value.trim();
+                const cls = document.getElementById('reg-class').value.trim().toUpperCase();
+                const gradeStr = document.getElementById('reg-grade').value.trim();
+                const username = document.getElementById('reg-username').value.trim().toLowerCase();
+                const pass = document.getElementById('reg-password').value;
+                const btn = document.getElementById('btn-register');
 
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            setTimeout(() => {
-                if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    deferredPrompt = null;
+                if (!name || !cls || !gradeStr || !username || !pass) return Utils.toast("Vui lòng điền đủ thông tin!", "error");
+                if (pass.length < 6) return Utils.toast("Mật khẩu phải từ 6 ký tự!", "error");
+
+                btn.innerHTML = `<span>⏳</span> <span>Đang xử lý...</span>`; btn.disabled = true;
+
+                try {
+                    // SỬA Ở ĐÂY: Tạo một UID chuẩn hóa dựa trên Tên và Lớp (giống cách exam.html và arena.html đang dùng)
+                    // Cách này đảm bảo Admin sẽ nhận diện được đúng tài khoản này sau khi tạo
+                    const normalizedUid = (name + "_" + cls).toLowerCase().replace(/\s+/g, "");
+                    
+                    // Trỏ đến nhánh users bằng UID chuẩn hóa này
+                    const userRef = db.ref('users/' + normalizedUid);
+                    const snapshot = await userRef.once('value');
+                    
+                    if (snapshot.exists()) {
+                        Utils.toast("Tài khoản (Tên + Lớp) này đã tồn tại trên hệ thống!", "error");
+                        btn.innerHTML = `<span>📝</span> <span>Tạo Tài Khoản</span>`; btn.disabled = false;
+                        return;
+                    }
+
+                    // TÍCH HỢP: KHỞI TẠO TÀI KHOẢN VỚI TRẠNG THÁI 'pending'
+                    // TÍCH HỢP: KHỞI TẠO TÀI KHOẢN VỚI TRẠNG THÁI 'pending'
+                    const newProfile = {
+                        uid: normalizedUid, // THÊM DÒNG NÀY: Ép cứng uid vào bên trong dữ liệu
+                        name: name,
+                        class: cls,
+                        grade: gradeStr,
+                        username: username, 
+                        password: btoa(pass),
+                        approvalStatus: 'pending', 
+                        coins: 0,
+                        frame: "frame-default",
+                        unlockedFrames: ["frame-default"],
+                        createdAt: firebase.database.ServerValue.TIMESTAMP
+                    };
+
+                    await userRef.set(newProfile);
+
+                    Utils.toast("Đăng ký thành công! Vui lòng chờ Giáo viên phê duyệt.", "success");
+                    
+                    // Reset form và chuyển về tab đăng nhập
+                    document.getElementById('reg-name').value = '';
+                    document.getElementById('reg-class').value = '';
+                    document.getElementById('reg-grade').value = '';
+                    document.getElementById('reg-username').value = '';
+                    document.getElementById('reg-password').value = '';
+                    
+                    btn.innerHTML = `<span>📝</span> <span>Tạo Tài Khoản</span>`; btn.disabled = false;
+                    setTimeout(() => Portal.switchAuthTab('login'), 1500);
+
+                } catch(error) {
+                    Utils.toast("Lỗi kết nối cơ sở dữ liệu!", "error");
+                    btn.innerHTML = `<span>📝</span> <span>Tạo Tài Khoản</span>`; btn.disabled = false;
                 }
-            }, 2000);
-        });
+            },
+
+            async login() {
+                const username = document.getElementById('log-username').value.trim().toLowerCase();
+                const pass = document.getElementById('log-password').value;
+                const btn = document.getElementById('btn-login');
+
+                if (!username || !pass) return Utils.toast("Nhập đủ tài khoản & mật khẩu!", "error");
+
+                btn.innerHTML = `<span>⏳</span> <span>Đang xác thực...</span>`; btn.disabled = true;
+
+                try {
+                    // SỬA Ở ĐÂY: Vì Firebase ID giờ là Tên_Lớp, ta phải quét toàn bộ users để tìm tài khoản có username khớp
+                    const usersRef = db.ref('users');
+                    const snapshot = await usersRef.once('value');
+                    let foundProfile = null;
+                    let foundUid = null;
+
+                    snapshot.forEach(child => {
+                        const profile = child.val();
+                        // Hỗ trợ đăng nhập bằng cả username hoặc tên tài khoản cũ
+                        if (profile.username === username || child.key === username) {
+                            foundProfile = profile;
+                            foundUid = child.key;
+                        }
+                    });
+
+                    if (foundProfile) {
+                        if (foundProfile.password === btoa(pass)) {
+                            // TÍCH HỢP: KIỂM TRA TRẠNG THÁI PHÊ DUYỆT TỪ QUẢN TRỊ VIÊN
+                            if (foundProfile.approvalStatus === 'pending') {
+                                Utils.toast("Tài khoản đang chờ Hội đồng duyệt. Vui lòng quay lại sau!", "info");
+                                btn.innerHTML = `<span>🚀</span> <span>Vào Hệ Thống</span>`; btn.disabled = false;
+                                return;
+                            } 
+                            if (foundProfile.approvalStatus === 'rejected') {
+                                Utils.toast("Tài khoản của bạn đã bị từ chối truy cập.", "error");
+                                btn.innerHTML = `<span>🚀</span> <span>Vào Hệ Thống</span>`; btn.disabled = false;
+                                return;
+                            }
+
+                            Utils.toast("Đăng nhập thành công!", "success");
+                            // Truyền UID tìm được vào hàm syncAndRedirect
+                            this.syncAndRedirect(foundUid, foundProfile.name, foundProfile.class || foundProfile.className, foundProfile);
+                        } else {
+                            Utils.toast("Sai mật khẩu!", "error");
+                            btn.innerHTML = `<span>🚀</span> <span>Vào Hệ Thống</span>`; btn.disabled = false;
+                        }
+                    } else {
+                        Utils.toast("Tài khoản không tồn tại!", "error");
+                        btn.innerHTML = `<span>🚀</span> <span>Vào Hệ Thống</span>`; btn.disabled = false;
+                    }
+                } catch(error) {
+                    console.error(error);
+                    Utils.toast("Lỗi kết nối cơ sở dữ liệu!", "error");
+                    btn.innerHTML = `<span>🚀</span> <span>Vào Hệ Thống</span>`; btn.disabled = false;
+                }
+            },
+
+            syncAndRedirect(uid, name, cls, cloudProfile = null) {
+                StorageUtil.set('eduMasterLastUser', {
+                    name: name,
+                    class: cls,
+                    grade: (cloudProfile && cloudProfile.grade) ? cloudProfile.grade : "",
+                    uid: uid
+                });
+                
+                if(cloudProfile) {
+                    const pid = uid; // Đồng bộ key profile theo uid thay vì name_class để tránh lỗi
+                    const allProfiles = StorageUtil.get('eduMasterProfiles') || {};
+                    allProfiles[pid] = {
+                        coins: cloudProfile.coins || 0,
+                        frame: cloudProfile.frame || "frame-default",
+                        unlockedFrames: cloudProfile.unlockedFrames || ["frame-default"]
+                    };
+                    StorageUtil.set('eduMasterProfiles', allProfiles);
+                }
+
+                if(document.activeElement) document.activeElement.blur();
+                document.body.style.opacity = '0';
+                
+                setTimeout(() => { window.location.href = 'arena.html'; }, 400);
+            }
+        };
     </script>
 </body>
 </html>
