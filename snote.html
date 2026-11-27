@@ -11,20 +11,19 @@
     <!-- 2. BẢN CHÍNH CDN CHO PC/ANDROID HIỆN ĐẠI (Tải có điều kiện) -->
     <script>
         (function() {
-            // Kiểm tra thiết bị Apple chạy iOS/iPadOS 10, 11, 12
             var isOldIOS = /iP(ad|hone|od).+(OS 1[0-2]_|Version\/1[0-2])/i.test(navigator.userAgent);
-            
             if (!isOldIOS) {
-                // Chỉ nạp Tailwind v3 trên trình duyệt hiện đại
                 var twScript = document.createElement('script');
                 twScript.src = 'https://cdn.tailwindcss.com';
+                twScript.onload = function() {
+                    if (window.tailwind) {
+                        window.tailwind.config = { corePlugins: { preflight: false } };
+                    }
+                };
                 document.head.appendChild(twScript);
-                
-                var configScript = document.createElement('script');
-                configScript.innerHTML = "tailwind.config = { corePlugins: { preflight: false } };";
-                document.head.appendChild(configScript);
             } else {
-                console.log("Kích hoạt chế độ Fallback cho S-Note trên iOS cũ");
+                document.documentElement.classList.add('ios12-fallback');
+                console.log("Kích hoạt chế độ Fallback cho S-Note trên iOS 12");
             }
         })();
     </script>
@@ -37,6 +36,9 @@
     
     <!-- ĐÃ FIX: Ghim cứng version marked.js xuống bản 4.3.0 an toàn (hỗ trợ ES5/ES6) để tránh lỗi SyntaxError trên iOS 12 -->
     <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
+    <!-- FIREBASE REALTIME SYNC (Tương thích iOS 12) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
     <!-- Tối ưu riêng cho Apple / Safari -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -48,78 +50,44 @@
     <link rel="apple-touch-icon" href="icon-192.png">
 
     <style>
-        /* ========================================================================= */
-        /* BỘ TỪ ĐIỂN FALLBACK CHO IOS 12 (Đã sửa lỗi dư dấu escape \) */
-        /* ========================================================================= */
-        
-        /* Bảng màu Slate */
-        .bg-slate-50 { background-color: #f8fafc !important; }
-        .bg-slate-100 { background-color: #f1f5f9 !important; }
-        .bg-slate-200 { background-color: #e2e8f0 !important; }
-        .bg-slate-800 { background-color: #1e293b !important; }
-        .bg-slate-900 { background-color: #0f172a !important; }
-        
-        .text-slate-300 { color: #cbd5e1 !important; }
-        .text-slate-400 { color: #94a3b8 !important; }
-        .text-slate-500 { color: #64748b !important; }
-        .text-slate-600 { color: #475569 !important; }
-        .text-slate-700 { color: #334155 !important; }
-        .text-slate-800 { color: #1e293b !important; }
-        .text-slate-900 { color: #0f172a !important; }
-        
-        .border-slate-100 { border-color: #f1f5f9 !important; }
-        .border-slate-200 { border-color: #e2e8f0 !important; }
-        .border-slate-300 { border-color: #cbd5e1 !important; }
+        /* BỘ TỪ ĐIỂN FALLBACK CHO IOS 12 (Tailwind v2 -> v3) */
+        .bg-slate-50 { background-color: #f8fafc !important; } .bg-slate-100 { background-color: #f1f5f9 !important; } .bg-slate-200 { background-color: #e2e8f0 !important; } .bg-slate-800 { background-color: #1e293b !important; } .bg-slate-900 { background-color: #0f172a !important; }
+        .text-slate-300 { color: #cbd5e1 !important; } .text-slate-400 { color: #94a3b8 !important; } .text-slate-500 { color: #64748b !important; } .text-slate-600 { color: #475569 !important; } .text-slate-700 { color: #334155 !important; } .text-slate-800 { color: #1e293b !important; } .text-slate-900 { color: #0f172a !important; }
+        .border-slate-100 { border-color: #f1f5f9 !important; } .border-slate-200 { border-color: #e2e8f0 !important; } .border-slate-300 { border-color: #cbd5e1 !important; }
 
-        /* Nền trong suốt (Opacity Backgrounds) */
-        .bg-slate-50\/50 { background-color: rgba(248, 250, 252, 0.5) !important; }
-        .bg-slate-50\/60 { background-color: rgba(248, 250, 252, 0.6) !important; }
-        .bg-slate-100\/90 { background-color: rgba(241, 245, 249, 0.9) !important; }
-        .bg-slate-900\/50 { background-color: rgba(15, 23, 42, 0.5) !important; }
-        .bg-slate-950\/80 { background-color: rgba(2, 6, 23, 0.8) !important; }
-        
-        .bg-blue-50\/50 { background-color: rgba(239, 246, 255, 0.5) !important; }
-        .bg-blue-50\/60 { background-color: rgba(239, 246, 255, 0.6) !important; }
-        
-        .bg-amber-50\/60 { background-color: rgba(255, 251, 235, 0.6) !important; }
-        .bg-amber-50\/70 { background-color: rgba(255, 251, 235, 0.7) !important; }
-        
-        /* Viền trong suốt */
-        .border-slate-200\/60 { border-color: rgba(226, 232, 240, 0.6) !important; }
-        .border-slate-200\/80 { border-color: rgba(226, 232, 240, 0.8) !important; }
-        .border-amber-200\/80 { border-color: rgba(253, 230, 138, 0.8) !important; }
+        .bg-emerald-50 { background-color: #ecfdf5 !important; } .bg-emerald-100 { background-color: #d1fae5 !important; } .bg-emerald-200 { background-color: #a7f3d0 !important; } .bg-emerald-500 { background-color: #10b981 !important; } .bg-emerald-600 { background-color: #059669 !important; }
+        .text-emerald-500 { color: #10b981 !important; } .text-emerald-600 { color: #059669 !important; } .text-emerald-800 { color: #065f46 !important; }
+        .border-emerald-200 { border-color: #a7f3d0 !important; } .border-emerald-400 { border-color: #34d399 !important; } .border-emerald-500 { border-color: #10b981 !important; }
 
-        /* Kích thước chữ tuỳ chỉnh */
-        .text-\[8px\] { font-size: 8px !important; line-height: 12px !important; }
-        .text-\[10px\] { font-size: 10px !important; line-height: 14px !important; }
-        .text-\[13px\] { font-size: 13px !important; line-height: 18px !important; }
-        
-        /* Kích thước đặc thù S-Note (Đảm bảo Sidebar không bị biến dạng trên iOS 12) */
-        .w-\[300px\] { width: 300px !important; }
-        .w-\[340px\] { width: 340px !important; }
-        .min-w-\[340px\] { min-width: 340px !important; }
-        .max-w-\[340px\] { max-width: 340px !important; }
-        
-        /* Z-Index */
-        .z-\[40\] { z-index: 40 !important; }
-        .z-\[50\] { z-index: 50 !important; }
-        .z-\[100\] { z-index: 100 !important; }
-        .z-\[110\] { z-index: 110 !important; }
-        
-        /* Bóng đổ đặc thù */
-        .shadow-xs { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important; }
-        .shadow-2xs { box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.05) !important; }
-        
-        /* Hỗ trợ kính mờ trên Safari cũ */
-        .backdrop-blur-sm { -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
-        .backdrop-blur-md { -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
-        
-        /* ========================================================================= */
+        .bg-rose-50 { background-color: #fff1f2 !important; } .bg-rose-200 { background-color: #fecdd3 !important; } .bg-rose-500 { background-color: #f43f5e !important; } .bg-rose-600 { background-color: #e11d48 !important; }
+        .text-rose-500 { color: #f43f5e !important; } .text-rose-700 { color: #be123c !important; } .text-rose-800 { color: #9f1239 !important; }
+        .border-rose-200 { border-color: #fecdd3 !important; } .border-rose-400 { border-color: #fb7185 !important; } .border-rose-500 { border-color: #f43f5e !important; }
 
-        /* Tối ưu chiều cao thực cho Safari Mobile */
+        .bg-amber-50 { background-color: #fffbeb !important; } .bg-amber-400 { background-color: #fbbf24 !important; }
+        .text-amber-300 { color: #fcd34d !important; } .text-amber-400 { color: #fbbf24 !important; } .text-amber-500 { color: #f59e0b !important; } .text-amber-700 { color: #b45309 !important; }
+        .border-amber-100 { border-color: #fef3c7 !important; } .border-amber-400 { border-color: #fbbf24 !important; }
+
+        /* Bảo vệ nền nút Gradient Luyện Tập trên iOS 12 */
+        .ios12-fallback .from-rose-500 { background: linear-gradient(90deg, #f43f5e, #f97316) !important; }
+
+        /* Nền & viền trong suốt */
+        .bg-slate-50\/50 { background-color: rgba(248, 250, 252, 0.5) !important; } .bg-slate-50\/60 { background-color: rgba(248, 250, 252, 0.6) !important; } .bg-slate-50\/95 { background-color: rgba(248, 250, 252, 0.95) !important; }
+        .bg-slate-100\/90 { background-color: rgba(241, 245, 249, 0.9) !important; } .bg-slate-900\/50 { background-color: rgba(15, 23, 42, 0.5) !important; } .bg-slate-900\/80 { background-color: rgba(15, 23, 42, 0.8) !important; } .bg-slate-950\/80 { background-color: rgba(2, 6, 23, 0.8) !important; }
+        .bg-blue-50\/50 { background-color: rgba(239, 246, 255, 0.5) !important; } .bg-blue-50\/60 { background-color: rgba(239, 246, 255, 0.6) !important; }
+        .bg-amber-50\/60 { background-color: rgba(255, 251, 235, 0.6) !important; } .bg-amber-50\/70 { background-color: rgba(255, 251, 235, 0.7) !important; }
+        .border-slate-200\/60 { border-color: rgba(226, 232, 240, 0.6) !important; } .border-slate-200\/80 { border-color: rgba(226, 232, 240, 0.8) !important; } .border-amber-200\/80 { border-color: rgba(253, 230, 138, 0.8) !important; }
+
+        /* Tiện ích & kích thước đặc thù */
+        .shrink-0 { flex-shrink: 0 !important; }
+        .text-\[8px\] { font-size: 8px !important; line-height: 12px !important; } .text-\[9px\] { font-size: 9px !important; line-height: 13px !important; } .text-\[10px\] { font-size: 10px !important; line-height: 14px !important; } .text-\[11px\] { font-size: 11px !important; line-height: 16px !important; } .text-\[13px\] { font-size: 13px !important; line-height: 18px !important; } .text-\[15px\] { font-size: 15px !important; line-height: 22px !important; }
+        .w-\[300px\] { width: 300px !important; } .w-\[340px\] { width: 340px !important; } .min-w-\[340px\] { min-width: 340px !important; } .max-w-\[340px\] { max-width: 340px !important; }
+        .z-\[40\] { z-index: 40 !important; } .z-\[50\] { z-index: 50 !important; } .z-\[100\] { z-index: 100 !important; } .z-\[110\] { z-index: 110 !important; }
+        .shadow-xs { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important; } .shadow-2xs { box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.05) !important; }
+        .backdrop-blur-sm { -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); } .backdrop-blur-md { -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+
         html, body { height: 100%; height: -webkit-fill-available; }
-        
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        #lesson-tree, #main-scroll-area, #se-scroll-area { -webkit-overflow-scrolling: touch; }
         .tab-btn.active { border-bottom: 2px solid #2563eb; color: #1d4ed8; font-weight: 700; }
         .lesson-item.active { background-color: #dbeafe; color: #1e40af; font-weight: 600; border-left: 3px solid #2563eb; }
         .katex { font-size: 1.08em; }
@@ -132,8 +100,9 @@
         .markdown-body blockquote { border-left: 4px solid #f59e0b; background-color: #fffbeb; padding: 0.75rem 1rem; border-radius: 0 0.5rem 0.5rem 0; margin-bottom: 1rem; }
         .katex-display { overflow-x: auto; overflow-y: hidden; padding-bottom: 5px; }
         @media print { aside, header, #nav-tabs, .btn-action, #toast-container, #ai-tooltip, #mobile-menu-btn { display: none !important; } main { overflow: visible !important; height: auto !important; max-width: 100% !important; padding: 0 !important; } .exam-card { break-inside: avoid; border: none !important; box-shadow: none !important; margin-bottom: 2rem !important; } .bg-blue-50, .bg-amber-50, .bg-slate-50 { background-color: transparent !important; border: 1px solid #e2e8f0 !important; } body { background: white !important; color: black !important; } }
+        @-webkit-keyframes slideUp { from { -webkit-transform: translateY(100%); opacity: 0; } to { -webkit-transform: translateY(0); opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .toast-enter { animation: slideUp 0.3s ease-out forwards; }
+        .toast-enter { -webkit-animation: slideUp 0.3s ease-out forwards; animation: slideUp 0.3s ease-out forwards; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 h-full flex flex-col md:flex-row overflow-hidden relative">
@@ -674,5 +643,128 @@
             </div>
         </div>
     </div>
+    <!-- ĐỒNG BỘ PRESENCE & THÔNG BÁO THỜI GIAN THỰC TỪ ADMIN -->
+    <script>
+        (function() {
+            if (!window.firebase || !firebase.database) return;
+            var fbConfig = { databaseURL: "https://edumaster-quiz-default-rtdb.asia-southeast1.firebasedatabase.app" };
+            if (!firebase.apps.length) {
+                firebase.initializeApp(fbConfig);
+            }
+            var snoteDb = firebase.database();
+
+            function escapeHTMLSafe(str) {
+                if (!str) return "";
+                return String(str).replace(/[&<>'"]/g, function(tag) {
+                    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag];
+                });
+            }
+
+            // 1. Báo vị trí S-Note lên online_users cho Admin thấy
+            var mySnotePresence = null;
+            var lastUser = {};
+            try { lastUser = JSON.parse(localStorage.getItem('eduMasterLastUser') || '{}'); } catch(e) {}
+
+            if (lastUser && lastUser.name) {
+                var safeUid = lastUser.uid || (lastUser.name + "_" + (lastUser.class || "")).toLowerCase().replace(/\s+/g, "");
+                snoteDb.ref('.info/connected').on('value', function(snap) {
+                    if (snap.val() === true) {
+                        if (mySnotePresence) { try { mySnotePresence.remove(); } catch(e) {} }
+                        mySnotePresence = snoteDb.ref('online_users').push();
+                        mySnotePresence.onDisconnect().remove();
+                        mySnotePresence.set({
+                            onlineAt: firebase.database.ServerValue.TIMESTAMP,
+                            uid: safeUid,
+                            name: lastUser.name.trim(),
+                            className: (lastUser.class || "").trim(),
+                            page: "snote",
+                            activity: "Đang xem Sổ tay S-Note",
+                            score: 0
+                        });
+                    }
+                });
+
+                // Tự động cập nhật tên bài đang học khi học sinh bấm chọn bài
+                if (typeof window.selectLesson === 'function') {
+                    var _origSelectLesson = window.selectLesson;
+                    window.selectLesson = function(id) {
+                        _origSelectLesson(id);
+                        try {
+                            var lessonData = window.MASTER_DB_GLOBAL && window.MASTER_DB_GLOBAL[id];
+                            if (mySnotePresence && lessonData && lessonData.title) {
+                                mySnotePresence.update({ page: "snote", activity: "Đang học: " + lessonData.title });
+                            }
+                        } catch(e) {}
+                    };
+                }
+            }
+
+            // 2. Lắng nghe Thông Báo ghim từ Giáo viên (chờ bấm Đã đọc)
+            snoteDb.ref('system_announcement').on('value', function(snap) {
+                var data = snap.val();
+                var oldBar = document.getElementById('edumaster-broadcast-bar');
+                if (!data || !data.id || !data.message) {
+                    if (oldBar) oldBar.remove();
+                    return;
+                }
+                if (localStorage.getItem('eduMaster_dismissedAnnId') === data.id) {
+                    if (oldBar) oldBar.remove();
+                    return;
+                }
+                if (oldBar) oldBar.remove();
+
+                var bar = document.createElement('div');
+                bar.id = 'edumaster-broadcast-bar';
+                bar.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:9999;width:92%;max-width:520px;';
+                bar.innerHTML =
+                    '<div class="bg-slate-900 text-white border-2 border-amber-400 rounded-2xl p-4 shadow-2xl flex items-start space-x-3">' +
+                        '<span class="text-2xl shrink-0">📢</span>' +
+                        '<div class="flex-1 min-w-0">' +
+                            '<div class="flex items-center justify-between mb-1">' +
+                                '<span class="text-[10px] font-black uppercase tracking-widest text-amber-400">Thông Báo Từ Giáo Viên</span>' +
+                                '<span class="text-[9px] text-slate-400 font-mono">' + escapeHTMLSafe(data.sentAt || '') + '</span>' +
+                            '</div>' +
+                            '<p class="text-xs md:text-sm font-bold text-white leading-relaxed break-words">' + escapeHTMLSafe(data.message) + '</p>' +
+                            '<div class="mt-3 flex justify-end">' +
+                                '<button type="button" id="btn-dismiss-broadcast" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-black text-[11px] uppercase px-4 py-1.5 rounded-lg shadow transition">Đã đọc ✓</button>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>';
+                document.body.appendChild(bar);
+                var btnDismiss = document.getElementById('btn-dismiss-broadcast');
+                if (btnDismiss) {
+                    btnDismiss.onclick = function() {
+                        localStorage.setItem('eduMaster_dismissedAnnId', data.id);
+                        bar.remove();
+                    };
+                }
+            });
+
+            // 3. Lắng nghe Thông Báo duyệt điểm bài thi Arena
+            if (lastUser && lastUser.uid) {
+                var notifiedKey = 'eduMasterNotifiedSubs_' + lastUser.uid;
+                snoteDb.ref('users/' + lastUser.uid + '/history').on('value', function(snap) {
+                    if (!snap.exists()) return;
+                    var rawVal = snap.val();
+                    var list = Array.isArray(rawVal) ? rawVal : Object.values(rawVal || {});
+                    var seen = [];
+                    try { seen = JSON.parse(localStorage.getItem(notifiedKey) || '[]'); } catch(e) { seen = []; }
+                    var changed = false;
+                    list.forEach(function(sub) {
+                        if (sub && sub.status === 'PUBLISHED' && seen.indexOf(sub.id) === -1) {
+                            seen.push(sub.id);
+                            changed = true;
+                            if (typeof showToast === 'function') {
+                                showToast('🎉 Giáo viên đã duyệt bài "' + sub.roomName + '" — Điểm: ' + sub.finalScore + '/10', 'success');
+                            }
+                        }
+                    });
+                    if (changed) {
+                        try { localStorage.setItem(notifiedKey, JSON.stringify(seen)); } catch(e) {}
+                    }
+                });
+            }
+        })();
+    </script>
 </body>
 </html>
