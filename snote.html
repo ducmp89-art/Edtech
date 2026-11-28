@@ -333,49 +333,71 @@
         function toggleSolution(id) { const solDiv = document.getElementById(`sol-${id}`); const btn = document.getElementById(`btn-${id}`); if (solDiv.classList.contains('hidden')) { solDiv.classList.remove('hidden'); btn.innerHTML = '<i class="fa-solid fa-eye-slash text-rose-500"></i> Ẩn lời giải'; } else { solDiv.classList.add('hidden'); btn.innerHTML = '<i class="fa-solid fa-eye text-emerald-600"></i> Xem lời giải'; } }
         function renderKaTeX() { renderMathInElement(document.body, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false }); }
 
-        // --- 3. ĐỘNG CƠ TẢI FILE ASYNC & KIỂM TRA BIẾN ---
+        // --- 3. ĐỘNG CƠ TẢI FILE LAZY-LOAD THEO KHỐI & MÔN ---
         window.MASTER_DB_GLOBAL = {};
         window.MASTER_PRACTICE_GLOBAL = {};
 
-        async function bootSystem() {
-            const grades = ['10', '8'];
-            const subjects = ['toan', 'ly', 'van', 'anh'];
+        const SNOTE_SUBJECT_MAP = {
+            MATH: { folder: 'toan', varPrefix: 'TOAN' },
+            PHY:  { folder: 'ly',   varPrefix: 'LY'   },
+            LIT:  { folder: 'van',  varPrefix: 'VAN'  },
+            ENG:  { folder: 'anh',  varPrefix: 'ANH'  }
+        };
+        const SNOTE_LOADED_PACKS = {};
+        const SNOTE_LOADING_PROMISES = {};
+
+        function safeGetGlobal(varName) {
+            try { return eval(varName); } catch (e) { return {}; }
+        }
+
+        function loadSubjectPack(grade, subjectCode) {
+            const packKey = grade + '_' + subjectCode;
+            if (SNOTE_LOADED_PACKS[packKey]) {
+                return Promise.resolve();
+            }
+            if (SNOTE_LOADING_PROMISES[packKey]) {
+                return SNOTE_LOADING_PROMISES[packKey];
+            }
+
+            const cfg = SNOTE_SUBJECT_MAP[subjectCode];
+            if (!cfg) return Promise.resolve();
+
             const maxChapter = 9;
             const promises = [];
 
-            grades.forEach(grade => {
-                subjects.forEach(sub => {
-                    for(let i = 1; i <= maxChapter; i++) {
-                        promises.push(new Promise(resolve => {
-                            let s = document.createElement('script');
-                            s.src = `data/lop_${grade}/data_${sub}/${sub}${grade}_ch${i}.js`;
-                            s.onload = resolve; s.onerror = resolve; 
-                            document.body.appendChild(s);
-                        }));
-                        promises.push(new Promise(resolve => {
-                            let s = document.createElement('script');
-                            s.src = `data/lop_${grade}/data_${sub}/${sub}${grade}_practice_ch${i}.js`;
-                            s.onload = resolve; s.onerror = resolve;
-                            document.body.appendChild(s);
-                        }));
-                    }
-                });
+            for (let i = 1; i <= maxChapter; i++) {
+                promises.push(new Promise(function(resolve) {
+                    const s = document.createElement('script');
+                    s.src = 'data/lop_' + grade + '/data_' + cfg.folder + '/' + cfg.folder + grade + '_ch' + i + '.js';
+                    s.onload = resolve;
+                    s.onerror = resolve;
+                    document.body.appendChild(s);
+                }));
+                promises.push(new Promise(function(resolve) {
+                    const s = document.createElement('script');
+                    s.src = 'data/lop_' + grade + '/data_' + cfg.folder + '/' + cfg.folder + grade + '_practice_ch' + i + '.js';
+                    s.onload = resolve;
+                    s.onerror = resolve;
+                    document.body.appendChild(s);
+                }));
+            }
+
+            const p = Promise.all(promises).then(function() {
+                const dbPrefix = 'DATA_' + cfg.varPrefix + grade;
+                const pracPrefix = 'DATA_PRACTICE_' + cfg.varPrefix + grade;
+                for (let i = 1; i <= maxChapter; i++) {
+                    Object.assign(window.MASTER_DB_GLOBAL, safeGetGlobal(dbPrefix + '_CH' + i));
+                    Object.assign(window.MASTER_PRACTICE_GLOBAL, safeGetGlobal(pracPrefix + '_CH' + i));
+                }
+                SNOTE_LOADED_PACKS[packKey] = true;
+                delete SNOTE_LOADING_PROMISES[packKey];
             });
 
-            await Promise.all(promises);
+            SNOTE_LOADING_PROMISES[packKey] = p;
+            return p;
+        }
 
-            function safeGet(varName) { try { return eval(varName); } catch(e) { return {}; } }
-            function mergeSubject(prefix) { return Object.assign({}, safeGet(`${prefix}_CH1`), safeGet(`${prefix}_CH2`), safeGet(`${prefix}_CH3`), safeGet(`${prefix}_CH4`), safeGet(`${prefix}_CH5`), safeGet(`${prefix}_CH6`), safeGet(`${prefix}_CH7`), safeGet(`${prefix}_CH8`), safeGet(`${prefix}_CH9`)); }
-
-            window.MASTER_DB_GLOBAL = Object.assign({},
-                mergeSubject('DATA_TOAN10'), mergeSubject('DATA_LY10'), mergeSubject('DATA_VAN10'), mergeSubject('DATA_ANH10'),
-                mergeSubject('DATA_TOAN8'), mergeSubject('DATA_LY8'), mergeSubject('DATA_VAN8'), mergeSubject('DATA_ANH8')
-            );
-            window.MASTER_PRACTICE_GLOBAL = Object.assign({},
-                mergeSubject('DATA_PRACTICE_TOAN10'), mergeSubject('DATA_PRACTICE_LY10'), mergeSubject('DATA_PRACTICE_VAN10'), mergeSubject('DATA_PRACTICE_ANH10'),
-                mergeSubject('DATA_PRACTICE_TOAN8'), mergeSubject('DATA_PRACTICE_LY8'), mergeSubject('DATA_PRACTICE_VAN8'), mergeSubject('DATA_PRACTICE_ANH8')
-            );
-
+        function bootSystem() {
             applyFilter();
         }
 
@@ -383,25 +405,45 @@
         let activeTab = 'theory';
         let currentLessonId = null;
 
-        function applyFilter() {
+        async function applyFilter() {
             const gradeFilter = document.getElementById('filter-grade').value;
             const subjectFilter = document.getElementById('filter-subject').value;
             const searchKeyword = document.getElementById('search-input').value.toLowerCase().trim();
             const container = document.getElementById('lesson-tree');
-            
+            const packKey = gradeFilter + '_' + subjectFilter;
+
+            if (!SNOTE_LOADED_PACKS[packKey]) {
+                container.innerHTML = '<div class="text-xs text-blue-600 font-semibold text-center py-8"><i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Đang tải dữ liệu môn học...</div>';
+                document.getElementById('data-count').innerText = 'Đang tải dữ liệu...';
+                await loadSubjectPack(gradeFilter, subjectFilter);
+            }
+
             let matchedCount = 0;
-            const matchedLessons = Object.entries(window.MASTER_DB_GLOBAL).filter(([id, item]) => {
-                return (item.grade === gradeFilter) && (item.subject === subjectFilter) && 
+            const matchedLessons = Object.entries(window.MASTER_DB_GLOBAL).filter(function(entry) {
+                const item = entry[1];
+                return (item.grade === gradeFilter) && (item.subject === subjectFilter) &&
                        (searchKeyword === "" || item.title.toLowerCase().includes(searchKeyword) || (item.chapter && item.chapter.toLowerCase().includes(searchKeyword)));
             });
 
             const chapters = {};
-            matchedLessons.forEach(([id, item]) => { const chap = item.chapter || "Chuyên đề"; if (!chapters[chap]) chapters[chap] = []; chapters[chap].push([id, item]); matchedCount++; });
+            matchedLessons.forEach(function(entry) {
+                const id = entry[0];
+                const item = entry[1];
+                const chap = item.chapter || "Chuyên đề";
+                if (!chapters[chap]) chapters[chap] = [];
+                chapters[chap].push([id, item]);
+                matchedCount++;
+            });
 
             let html = '';
             for (const [chapTitle, lessons] of Object.entries(chapters)) {
                 html += `<div class="border border-slate-200 rounded-xl bg-slate-50/60 overflow-hidden shadow-2xs mb-3"><div class="px-3 py-2 bg-slate-100/90 border-b border-slate-200 text-xs font-bold text-slate-700 flex items-center justify-between"><span class="truncate pr-1"><i class="fa-solid fa-folder-open text-blue-500 mr-1.5"></i> ${chapTitle}</span><span class="text-[10px] bg-white border border-slate-200 px-1.5 py-0.5 rounded text-slate-500 shrink-0">${lessons.length} bài</span></div><div class="p-1 space-y-0.5">`;
-                html += lessons.map(([id, item]) => { const isActive = (id === currentLessonId) ? 'active' : ''; return `<button onclick="selectLesson('${id}')" class="lesson-item ${isActive} w-full text-left px-2.5 py-2.5 md:py-2 rounded-lg text-[13px] md:text-xs text-slate-600 hover:bg-white transition flex items-center justify-between"><span class="truncate pr-2">${item.title}</span><i class="fa-solid fa-angle-right text-[10px] text-slate-300"></i></button>`; }).join('');
+                html += lessons.map(function(entry) {
+                    const id = entry[0];
+                    const item = entry[1];
+                    const isActive = (id === currentLessonId) ? 'active' : '';
+                    return `<button onclick="selectLesson('${id}')" class="lesson-item ${isActive} w-full text-left px-2.5 py-2.5 md:py-2 rounded-lg text-[13px] md:text-xs text-slate-600 hover:bg-white transition flex items-center justify-between"><span class="truncate pr-2">${item.title}</span><i class="fa-solid fa-angle-right text-[10px] text-slate-300"></i></button>`;
+                }).join('');
                 html += `</div></div>`;
             }
             container.innerHTML = html || '<div class="text-xs text-slate-400 text-center py-8">Chưa có dữ liệu cho phần này</div>';
