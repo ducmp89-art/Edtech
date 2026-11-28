@@ -199,6 +199,13 @@
         .toolkit-btn.active { background-color: #ffffff; color: #2563eb; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
         input, select, textarea { font-size: 16px !important; }
         .max-w-full { max-width: 100%; height: auto; }
+        /* Hỗ trợ Phiếu Tô Thông Minh trên iPad (768px - 1023px) & iOS 12 */
+        @media (min-width: 768px) and (max-width: 1023px) {
+            #right-panel { width: 224px !important; }
+        }
+        @media (min-width: 768px) {
+            #right-panel.matrix-desktop-hidden { display: none !important; }
+        }
         @media (max-width: 767px) { .desktop-toolbar { display: none !important; } }
     </style>
 </head>
@@ -315,7 +322,7 @@
         </header>
 
         <div class="flex-1 flex overflow-hidden w-full relative" id="exam-main-layout">
-            <div class="flex-1 overflow-y-auto p-3 md:p-8 pb-32 transition-all duration-300 custom-scrollbar relative bg-slate-100/50" id="exam-scroll-area">
+            <div class="flex-1 overflow-y-auto p-3 md:p-4 lg:p-8 pb-32 transition-all duration-300 custom-scrollbar relative bg-slate-100/50" id="exam-scroll-area">
                 
                 <!-- TRẠM MEDIA & BĂNG CHỮ CỐ ĐỊNH TRÊN ĐẦU TỜ ĐỀ -->
                 <div id="media-dock-container" class="hidden max-w-4xl mx-auto mb-6 bg-indigo-950 text-white rounded-2xl border border-indigo-800 p-4 shadow-xl sticky top-0 z-20"></div>
@@ -332,7 +339,7 @@
 
             <div id="mobile-matrix-overlay" style="display: none;" onclick="ArenaEngine.toggleMobileMatrix()" class="md:hidden fixed inset-0 bg-slate-900/40 z-40 hidden opacity-0 transition-opacity duration-300"></div>
 
-            <div id="right-panel" class="fixed inset-y-0 right-0 z-50 flex flex-col w-[300px] md:w-72 lg:w-80 bg-white border-l border-slate-200 shadow-2xl md:shadow-[-10px_0_15px_-3px_rgba(0,0,0,0.03)] transform translate-x-full md:translate-x-0 md:relative transition-transform duration-300 h-full">
+            <div id="right-panel" class="fixed inset-y-0 right-0 z-50 flex flex-col w-[280px] md:w-56 lg:w-72 xl:w-80 bg-white border-l border-slate-200 shadow-2xl md:shadow-[-10px_0_15px_-3px_rgba(0,0,0,0.03)] transform translate-x-full md:translate-x-0 md:relative transition-transform duration-300 h-full shrink-0">
                 
                 <div id="panel-standard" style="display: none;" class="hidden flex-col h-full overflow-hidden">
                     <div class="p-4 border-b border-slate-100 shrink-0 flex justify-between items-center">
@@ -350,12 +357,15 @@
                 </div>
 
                 <div id="panel-matrix" style="display: flex;" class="flex flex-col h-full bg-slate-50 overflow-hidden relative">
-                    <div class="bg-slate-900 text-white p-3.5 shrink-0 text-center shadow-md z-20 relative">
-                        <h3 class="font-black tracking-widest uppercase text-sm">Phiếu Tô Trắc Nghiệm</h3>
+                    <div class="bg-slate-900 text-white p-2.5 lg:p-3.5 shrink-0 text-center shadow-md z-20 relative">
+                        <h3 class="font-black tracking-wider lg:tracking-widest uppercase text-xs lg:text-sm pr-6 md:pr-5">Phiếu Tô Trắc Nghiệm</h3>
                         <p class="text-[9px] text-slate-400 mt-0.5 uppercase font-bold">Chuẩn cấu trúc 2025</p>
-                        <button onclick="ArenaEngine.toggleMobileMatrix()" class="md:hidden absolute top-1/2 -translate-y-1/2 right-3 w-8 h-8 flex items-center justify-center bg-white/20 rounded-full text-white font-bold">✕</button>
+                        <!-- Nút đóng ngăn kéo cho Mobile -->
+                        <button type="button" onclick="ArenaEngine.toggleMobileMatrix()" class="md:hidden absolute top-2.5 right-2.5 w-7 h-7 flex items-center justify-center bg-white/20 rounded-full text-white font-bold text-xs">✕</button>
+                        <!-- Nút thu gọn 1 chạm cho iPad & PC -->
+                        <button type="button" onclick="ArenaEngine.toggleDesktopMatrix(true)" class="hidden md:flex absolute top-2.5 right-2.5 w-7 h-7 items-center justify-center bg-white/10 hover:bg-white/20 rounded-lg text-white font-black text-xs transition" title="Thu gọn Phiếu tô để xem đề rộng hơn">»</button>
                         
-                        <div class="mt-2.5 text-left">
+                        <div class="mt-2 text-left">
                             <div class="flex justify-between items-center text-[10px] font-bold mb-1">
                                 <span class="text-slate-300">Tiến độ: <span id="matrix-progress-text" class="text-amber-400 font-black">0/0</span></span>
                                 <span id="matrix-flag-count" class="text-rose-300 font-bold">🚩 0</span>
@@ -365,20 +375,32 @@
                             </div>
                         </div>
 
-                        <div class="flex space-x-1 mt-2.5 bg-slate-800 p-1 rounded-lg">
+                        <div class="flex space-x-1 mt-2 bg-slate-800 p-1 rounded-lg">
                             <button type="button" id="mat-filter-all" onclick="ArenaEngine.setMatrixFilter('all')" class="flex-1 py-1 text-[9px] font-black uppercase rounded bg-blue-600 text-white transition">Tất cả</button>
                             <button type="button" id="mat-filter-unanswered" onclick="ArenaEngine.setMatrixFilter('unanswered')" class="flex-1 py-1 text-[9px] font-black uppercase rounded text-slate-300 hover:text-white transition">Chưa làm</button>
                             <button type="button" id="mat-filter-flagged" onclick="ArenaEngine.setMatrixFilter('flagged')" class="flex-1 py-1 text-[9px] font-black uppercase rounded text-slate-300 hover:text-white transition">Cắm cờ</button>
                         </div>
                     </div>
                     <div class="flex-1 overflow-y-auto custom-scrollbar bg-slate-100 flex flex-col">
-                        <div id="matrix-container" class="p-2 md:p-3 pb-8 space-y-3 flex-1 flex flex-col"></div>
+                        <div id="matrix-container" class="p-1.5 lg:p-3 pb-8 space-y-2.5 lg:space-y-3 flex-1 flex flex-col"></div>
                     </div>
                 </div>
             </div>
-            <button type="button" onclick="ArenaEngine.toggleMobileMatrix()" class="md:hidden fixed bottom-6 right-6 z-30 bg-rose-600 hover:bg-rose-700 text-white w-12 h-12 rounded-full shadow-2xl flex items-center justify-center text-lg transition-transform active:scale-90 border-2 border-white" title="Mở Phiếu Tô">📝</button>
+
+            <!-- Thẻ mở lại Phiếu tô khi thu gọn trên iPad / PC -->
+            <button type="button" id="btn-reopen-matrix-desktop" onclick="ArenaEngine.toggleDesktopMatrix(false)" class="hidden fixed right-0 top-1/2 -translate-y-1/2 z-30 bg-slate-900 hover:bg-blue-700 text-white px-2.5 py-3 rounded-l-xl shadow-2xl border-l-2 border-t-2 border-b-2 border-blue-400 flex flex-col items-center space-y-1 transition active:scale-95" title="Mở lại Phiếu Tô">
+                <span class="text-sm font-black">«</span>
+                <span class="text-[9px] font-black uppercase tracking-wider">Phiếu</span>
+                <span id="desktop-matrix-reopen-progress" class="text-[10px] font-black text-amber-400">0/0</span>
+            </button>
+
+            <!-- Nút nổi mở Phiếu tô cho Điện thoại (kèm tiến độ) -->
+            <button type="button" onclick="ArenaEngine.toggleMobileMatrix()" class="md:hidden fixed bottom-6 right-5 z-30 bg-rose-600 hover:bg-rose-700 text-white px-3.5 h-12 rounded-full shadow-2xl flex items-center justify-center space-x-1.5 transition-transform active:scale-90 border-2 border-white" title="Mở Phiếu Tô">
+                <span class="text-base">📝</span>
+                <span id="mobile-matrix-badge" class="text-[11px] font-black">0/0</span>
+            </button>
         </div>
-    </div>
+        </div>
 
     <div id="profile-modal" style="display: none;" class="fixed inset-0 bg-slate-900/90 z-50 hidden flex-col items-center justify-center p-4 backdrop-blur-sm transition-all duration-300">
         <div class="bg-white p-6 md:p-8 rounded-3xl max-w-3xl w-full shadow-2xl flex flex-col max-h-[85vh] transform scale-100">
@@ -789,6 +811,36 @@
                     setTimeout(() => { overlay.style.display = 'none'; overlay.classList.add('hidden'); }, 300);
                 }
             },
+            isDesktopMatrixCollapsed: false,
+            toggleDesktopMatrix(forceCollapse) {
+                const panel = document.getElementById('right-panel');
+                const reopenBtn = document.getElementById('btn-reopen-matrix-desktop');
+                if (!panel) return;
+                this.isDesktopMatrixCollapsed = (typeof forceCollapse === 'boolean') ? forceCollapse : !this.isDesktopMatrixCollapsed;
+                if (this.isDesktopMatrixCollapsed) {
+                    panel.classList.add('matrix-desktop-hidden');
+                    if (reopenBtn) reopenBtn.classList.remove('hidden');
+                } else {
+                    panel.classList.remove('matrix-desktop-hidden');
+                    if (reopenBtn) reopenBtn.classList.add('hidden');
+                }
+            },
+            jumpToQuestionFromMatrix(qId, rawIdx) {
+                if (this.layoutMode === 'single') {
+                    this.currentIndex = rawIdx;
+                    this.applyLayout();
+                } else {
+                    const el = document.getElementById('q-block-' + qId);
+                    if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        el.classList.add('flash-focus');
+                        setTimeout(function() { el.classList.remove('flash-focus'); }, 1200);
+                    }
+                }
+                if (this.isMobileMatrixOpen && window.innerWidth < 768) {
+                    this.toggleMobileMatrix();
+                }
+            },
             insertSymbol(qId, symbol, type) {
                 if (this.isSubmitted) return;
                 const inputId = type === 'short' ? `in-short-${qId}` : `in-essay-${qId}`; const input = document.getElementById(inputId); if (!input) return;
@@ -852,12 +904,17 @@
                     if (this.isQuestionDone(q)) done++;
                     if (this.flags && this.flags[q.id]) flagged++;
                 });
+                const ratioStr = `${done}/${total}`;
                 const txt = document.getElementById('matrix-progress-text');
                 const bar = document.getElementById('matrix-progress-bar');
                 const flg = document.getElementById('matrix-flag-count');
-                if (txt) txt.innerText = `${done}/${total}`;
+                const mobBadge = document.getElementById('mobile-matrix-badge');
+                const deskReopen = document.getElementById('desktop-matrix-reopen-progress');
+                if (txt) txt.innerText = ratioStr;
                 if (bar) bar.style.width = total > 0 ? `${Math.round((done / total) * 100)}%` : '0%';
                 if (flg) flg.innerText = `🚩 ${flagged}`;
+                if (mobBadge) mobBadge.innerText = ratioStr;
+                if (deskReopen) deskReopen.innerText = ratioStr;
             },
             setMatrixFilter(filter) {
                 this.matrixFilter = filter || 'all';
@@ -946,8 +1003,67 @@
                 targetBtn.classList.toggle('line-through');
             },
 
+            roomSettingsMap: {},
+
+            safeRoomKey(roomId) {
+                return String(roomId || "").replace(/[.#$\[\]\/]/g, "_");
+            },
+
+            getRoomSetting(roomId) {
+                const safeKey = this.safeRoomKey(roomId);
+                const raw = (this.roomSettingsMap && this.roomSettingsMap[safeKey]) ? this.roomSettingsMap[safeKey] : {};
+                return {
+                    isLocked: Boolean(raw.isLocked),
+                    maxAttempts: Number(raw.maxAttempts) === 1 ? 1 : 0,
+                    hideAnswers: Boolean(raw.hideAnswers)
+                };
+            },
+
+            getStudentRoomAttemptCount(roomId) {
+                let allSubs = [];
+                try { allSubs = JSON.parse(localStorage.getItem('ARENA_SUBMISSIONS') || '[]'); } catch(e) { allSubs = []; }
+                if (!Array.isArray(allSubs)) return 0;
+                const myName = String(this.student.name || "").trim().toLowerCase();
+                const myCls = String(this.student.class || "").trim().toLowerCase();
+                const targetId = String(roomId || "").trim();
+                return allSubs.filter(function(s) {
+                    if (!s) return false;
+                    return String(s.roomId || "").trim() === targetId &&
+                           String(s.studentName || "").trim().toLowerCase() === myName &&
+                           String(s.className || "").trim().toLowerCase() === myCls;
+                }).length;
+            },
+
+            watchRoomSettings() {
+                if (!window.firebase || !firebase.database || this._watchingRoomSettings) return;
+                this._watchingRoomSettings = true;
+                firebase.database().ref('room_settings').on('value', (snap) => {
+                    this.roomSettingsMap = snap.val() || {};
+                    const lobbyEl = document.getElementById('lobby-screen');
+                    if (lobbyEl && lobbyEl.style.display !== 'none') {
+                        this.applyFilters();
+                    }
+                    const resModal = document.getElementById('result-modal');
+                    if (resModal && resModal.style.display !== 'none' && this.roomData && this.roomData.roomId) {
+                        const cfg = this.getRoomSetting(this.roomData.roomId);
+                        const btnReview = document.getElementById('btn-close-modal');
+                        if (btnReview) {
+                            if (cfg.hideAnswers) {
+                                btnReview.disabled = true;
+                                btnReview.className = "w-full bg-slate-300 text-slate-500 font-black py-3 rounded-xl cursor-not-allowed uppercase text-xs tracking-wider";
+                                btnReview.innerText = "🙈 Đáp án đang tạm ẩn";
+                            } else {
+                                btnReview.disabled = false;
+                                btnReview.className = "w-full bg-blue-600 text-white font-black py-3 rounded-xl shadow-lg hover:bg-blue-700 transition uppercase text-xs tracking-wider";
+                                btnReview.innerText = "Mở Lời Giải";
+                            }
+                        }
+                    }
+                });
+            },
+
             init() {
-                this.buildDatabase(); this.watchLiveGrading();
+                this.buildDatabase(); this.watchLiveGrading(); this.watchRoomSettings();
                 const lastUser = JSON.parse(localStorage.getItem('eduMasterLastUser'));
                 if (lastUser && lastUser.name && lastUser.class) { this.setupStudent(lastUser.name, lastUser.class); } 
                 else {
@@ -1290,6 +1406,7 @@
                         container.innerHTML = `<div class="text-center py-12 text-slate-400 text-sm font-semibold border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50">Chưa có bài thi nào được ghi nhận.</div>`;
                     } else {
                         container.innerHTML = myHistory.map(sub => {
+                            const cfg = this.getRoomSetting(sub.roomId);
                             let scoreDisplay = '';
                             if (sub.status === 'PUBLISHED' && sub.finalScore !== null && sub.finalScore !== undefined) {
                                 scoreDisplay = `<div><span class="text-xl md:text-2xl font-black text-emerald-600 leading-none">${sub.finalScore}</span><span class="text-[10px] text-emerald-600 font-bold ml-0.5">đ</span></div>`;
@@ -1298,7 +1415,11 @@
                             } else {
                                 scoreDisplay = `<div><span class="text-xl md:text-2xl font-black text-blue-600 leading-none">${sub.objScore || 0}</span><span class="text-[10px] text-blue-600 font-bold ml-0.5">đ</span></div>`;
                             }
-                            return `<div class="bg-white border-2 border-slate-100 p-4 md:p-5 rounded-2xl flex justify-between items-center space-x-4 hover:border-blue-300 hover:shadow-md transition-all group"><div class="flex-1 overflow-hidden"><h4 class="font-bold text-slate-800 text-sm md:text-base truncate group-hover:text-blue-700 transition" title="${Utils.escapeHTML(sub.roomName)}">${Utils.escapeHTML(sub.roomName)}</h4><div class="flex items-center space-x-3 mt-1.5"><span class="text-[10px] md:text-xs text-slate-500 font-bold bg-slate-100 px-2 py-0.5 rounded border border-slate-200 uppercase tracking-widest">${Utils.escapeHTML(sub.roomId)}</span><span class="text-[10px] md:text-xs text-slate-400 font-medium font-mono">${Utils.escapeHTML(sub.submittedAt)}</span></div></div><div class="text-right shrink-0 flex flex-col items-end space-y-2 border-l border-slate-100 pl-4">${scoreDisplay}<button type="button" onclick="ArenaEngine.reviewSubmissionById('${sub.id}')" class="bg-slate-800 hover:bg-black text-white text-[10px] font-black px-4 py-2 rounded-lg uppercase transition shadow-sm w-full">Chi tiết</button></div></div>`;
+                            const actionBtn = cfg.hideAnswers
+                                ? `<button type="button" onclick="Utils.toast('🙈 Giáo viên đang tạm ẩn đáp án phòng thi này!', 'info')" class="bg-slate-200 text-slate-500 text-[10px] font-black px-3 py-2 rounded-lg uppercase w-full cursor-not-allowed">🔒 Chờ mở ĐA</button>`
+                                : `<button type="button" onclick="ArenaEngine.reviewSubmissionById('${sub.id}')" class="bg-slate-800 hover:bg-black text-white text-[10px] font-black px-4 py-2 rounded-lg uppercase transition shadow-sm w-full">Chi tiết</button>`;
+
+                            return `<div class="bg-white border-2 border-slate-100 p-4 md:p-5 rounded-2xl flex justify-between items-center space-x-4 hover:border-blue-300 hover:shadow-md transition-all group"><div class="flex-1 overflow-hidden"><h4 class="font-bold text-slate-800 text-sm md:text-base truncate group-hover:text-blue-700 transition" title="${Utils.escapeHTML(sub.roomName)}">${Utils.escapeHTML(sub.roomName)}</h4><div class="flex items-center space-x-3 mt-1.5"><span class="text-[10px] md:text-xs text-slate-500 font-bold bg-slate-100 px-2 py-0.5 rounded border border-slate-200 uppercase tracking-widest">${Utils.escapeHTML(sub.roomId)}</span><span class="text-[10px] md:text-xs text-slate-400 font-medium font-mono">${Utils.escapeHTML(sub.submittedAt)}</span></div></div><div class="text-right shrink-0 flex flex-col items-end space-y-2 border-l border-slate-100 pl-4">${scoreDisplay}${actionBtn}</div></div>`;
                         }).join('');
                     }
 
@@ -1317,6 +1438,11 @@
             reviewSubmissionById(subId) {
                 const allSubs = JSON.parse(localStorage.getItem('ARENA_SUBMISSIONS') || '[]'); const targetSub = allSubs.find(s => s.id === subId);
                 if (!targetSub) { Utils.toast("Không tìm thấy dữ liệu bài làm!", "error"); return; }
+                const cfg = this.getRoomSetting(targetSub.roomId);
+                if (cfg.hideAnswers) {
+                    Utils.toast("🙈 Giáo viên đang tạm ẩn đáp án phòng thi này. Vui lòng xem lại sau khi kết thúc ca thi!", "info");
+                    return;
+                }
                 const room = this.database.find(r => r.roomId === targetSub.roomId);
                 this.roomData = room || { roomId: targetSub.roomId, roomName: targetSub.roomName }; this.examData = targetSub.examQuestions || (room ? room.questions : []); this.answers = targetSub.answers || {}; this.isSubmitted = true; this.currentIndex = 0; this.currentSubmissionId = targetSub.id; this.flags = {}; this.cheatCount = targetSub.cheatCount || 0;
                 clearInterval(this.examInterval); clearInterval(this.countdownInterval);
@@ -1343,6 +1469,7 @@
                 if (rooms.length === 0) { container.innerHTML = `<div class="text-center py-12 bg-white/5 border border-white/10 rounded-2xl text-white/40 text-xs font-bold">Chưa có bài tập nào trong phân khu này.</div>`; return; }
                 const allSubs = JSON.parse(localStorage.getItem('ARENA_SUBMISSIONS') || '[]'); const myHistory = allSubs.filter(s => s.studentName === this.student.name && s.className === this.student.class);
                 container.innerHTML = rooms.map(r => {
+                    const cfg = this.getRoomSetting(r.roomId);
                     const roomHistory = myHistory.filter(s => s.roomId === r.roomId); const hasDone = roomHistory.length > 0;
                     let maxScore = 0; let latestSubId = null;
                     if (hasDone) { maxScore = Math.max(...roomHistory.map(s => parseFloat(s.finalScore || s.objScore || 0))); latestSubId = roomHistory[0].id; }
@@ -1351,15 +1478,41 @@
                     if(this.currentLabTab === 'listening') enterBtnText = "LUYỆN NGHE";
                     if(this.currentLabTab === 'speaking') enterBtnText = "LUYỆN NÓI";
 
-                    return `<div class="bg-white/10 border flex flex-col md:flex-row items-start md:items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4 md:p-5 rounded-xl transition group relative overflow-hidden ${hasDone ? 'border-emerald-500/50 hover:border-emerald-400' : 'border-white/20 hover:border-blue-400'}">${hasDone ? '<div class="absolute top-0 right-0 bg-emerald-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-bl-md shadow-sm">ĐÃ LÀM</div>' : ''}<div class="flex-1 min-w-0 w-full"><div class="flex flex-wrap items-center space-x-2 mb-1.5"><span class="text-[9px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded font-black border border-indigo-500/30 uppercase tracking-widest">${r.subject} ${r.grade}</span><span class="text-[9px] text-blue-200 font-semibold flex items-center space-x-1">⏱️ ${r.durationMinutes}p</span><span class="text-[9px] text-rose-300 font-semibold flex items-center space-x-1 bg-rose-500/10 px-1.5 py-0.5 rounded border border-rose-500/20"><span class="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse"></span> ${presence}</span></div><h4 class="font-bold text-white text-[12px] md:text-[13px] group-hover:text-blue-200 transition leading-tight truncate" title="${r.roomName}">${r.roomName}</h4>${hasDone ? `<p class="text-[9px] text-emerald-400 font-bold mt-1">Đã làm: ${roomHistory.length} lần | Kỷ lục: ${maxScore.toFixed(1)}đ</p>` : ''}</div><div class="shrink-0 flex items-center space-x-2 w-full md:w-auto justify-end">${hasDone ? `<button type="button" onclick="ArenaEngine.reviewSubmissionById('${latestSubId}')" class="flex-1 md:flex-none w-auto h-8 md:px-3 flex items-center justify-center bg-amber-500 hover:bg-amber-600 text-white border border-amber-600 rounded-lg text-xs font-black uppercase transition active:scale-95 shadow-md" title="Xem Lại">👀 <span class="ml-1 text-[10px]">Xem</span></button><button type="button" onclick="ArenaEngine.joinRoom('${r.roomId}', true)" class="flex-1 md:flex-none w-auto h-8 md:px-3 flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg text-xs font-black uppercase transition active:scale-95 shadow-md" title="Thi Lại (Trộn mã đề mới)">🔄 <span class="ml-1 text-[10px]">Làm lại</span></button>` : `<button type="button" onclick="ArenaEngine.joinRoom('${r.roomId}', false)" class="w-full md:w-auto bg-white text-slate-900 hover:bg-blue-50 border border-white/30 px-3 h-8 md:px-4 md:h-9 rounded-lg text-[10px] md:text-xs font-black uppercase transition active:scale-95 shadow-lg">${enterBtnText}</button>`}</div></div>`;
+                    let badgesHTML = '';
+                    if (cfg.isLocked) badgesHTML += `<span class="text-[9px] bg-rose-600 text-white px-1.5 py-0.5 rounded font-black uppercase">🔒 Đang khóa</span>`;
+                    if (cfg.maxAttempts === 1) badgesHTML += `<span class="text-[9px] bg-amber-500/30 text-amber-200 px-1.5 py-0.5 rounded font-black border border-amber-400/50 uppercase">1️⃣ 1 Lượt</span>`;
+                    if (cfg.hideAnswers) badgesHTML += `<span class="text-[9px] bg-indigo-500/30 text-indigo-200 px-1.5 py-0.5 rounded font-black border border-indigo-400/40 uppercase">🙈 Ẩn ĐA</span>`;
+
+                    let actionHTML = '';
+                    if (cfg.isLocked && !hasDone) {
+                        actionHTML = `<button type="button" disabled class="w-full md:w-auto bg-slate-700/80 text-slate-400 border border-slate-600 px-3 h-8 md:px-4 md:h-9 rounded-lg text-[10px] md:text-xs font-black uppercase cursor-not-allowed">🔒 Đang khóa</button>`;
+                    } else if (hasDone) {
+                        const viewBtn = cfg.hideAnswers
+                            ? `<button type="button" onclick="Utils.toast('🙈 Giáo viên đang tạm ẩn đáp án phòng thi này!', 'info')" class="flex-1 md:flex-none w-auto h-8 md:px-3 flex items-center justify-center bg-slate-700 text-slate-300 border border-slate-600 rounded-lg text-[10px] font-black uppercase cursor-not-allowed">🙈 Đã nộp</button>`
+                            : `<button type="button" onclick="ArenaEngine.reviewSubmissionById('${latestSubId}')" class="flex-1 md:flex-none w-auto h-8 md:px-3 flex items-center justify-center bg-amber-500 hover:bg-amber-600 text-white border border-amber-600 rounded-lg text-xs font-black uppercase transition active:scale-95 shadow-md" title="Xem Lại">👀 <span class="ml-1 text-[10px]">Xem</span></button>`;
+                        const retryBtn = (cfg.isLocked || cfg.maxAttempts === 1)
+                            ? `<span class="px-2.5 h-8 flex items-center justify-center bg-slate-800/70 text-slate-400 border border-slate-700 rounded-lg text-[10px] font-bold uppercase">${cfg.isLocked ? '🔒 Khóa' : '✓ Hết lượt'}</span>`
+                            : `<button type="button" onclick="ArenaEngine.joinRoom('${r.roomId}', true)" class="flex-1 md:flex-none w-auto h-8 md:px-3 flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg text-xs font-black uppercase transition active:scale-95 shadow-md" title="Thi Lại (Trộn mã đề mới)">🔄 <span class="ml-1 text-[10px]">Làm lại</span></button>`;
+                        actionHTML = viewBtn + retryBtn;
+                    } else {
+                        actionHTML = `<button type="button" onclick="ArenaEngine.joinRoom('${r.roomId}', false)" class="w-full md:w-auto bg-white text-slate-900 hover:bg-blue-50 border border-white/30 px-3 h-8 md:px-4 md:h-9 rounded-lg text-[10px] md:text-xs font-black uppercase transition active:scale-95 shadow-lg">${enterBtnText}</button>`;
+                    }
+
+                    return `<div class="bg-white/10 border flex flex-col md:flex-row items-start md:items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4 md:p-5 rounded-xl transition group relative overflow-hidden ${cfg.isLocked ? 'border-rose-500/40 opacity-80' : (hasDone ? 'border-emerald-500/50 hover:border-emerald-400' : 'border-white/20 hover:border-blue-400')}">${hasDone ? '<div class="absolute top-0 right-0 bg-emerald-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-bl-md shadow-sm">ĐÃ LÀM</div>' : ''}<div class="flex-1 min-w-0 w-full"><div class="flex flex-wrap items-center space-x-1.5 mb-1.5"><span class="text-[9px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded font-black border border-indigo-500/30 uppercase tracking-widest">${r.subject} ${r.grade}</span><span class="text-[9px] text-blue-200 font-semibold flex items-center space-x-1">⏱️ ${r.durationMinutes}p</span><span class="text-[9px] text-rose-300 font-semibold flex items-center space-x-1 bg-rose-500/10 px-1.5 py-0.5 rounded border border-rose-500/20"><span class="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse"></span> ${presence}</span>${badgesHTML}</div><h4 class="font-bold text-white text-[12px] md:text-[13px] group-hover:text-blue-200 transition leading-tight truncate" title="${r.roomName}">${r.roomName}</h4>${hasDone ? `<p class="text-[9px] text-emerald-400 font-bold mt-1">Đã làm: ${roomHistory.length} lần | Kỷ lục: ${maxScore.toFixed(1)}đ</p>` : ''}</div><div class="shrink-0 flex items-center space-x-2 w-full md:w-auto justify-end">${actionHTML}</div></div>`;
                 }).join('');
             },
             
             joinRoomViaCode() {
                 const code = document.getElementById('room-code').value.trim().toUpperCase(); if (!code) return Utils.toast("Vui lòng nhập mã phòng!", "error");
-                const allSubs = JSON.parse(localStorage.getItem('ARENA_SUBMISSIONS') || '[]'); const hasDone = allSubs.some(s => s.studentName === this.student.name && s.className === this.student.class && s.roomId === code);
-                if (hasDone) { Utils.toast("Bạn đã làm ca thi này! Hãy bấm 'Bảng Điểm Của Tôi' để tra cứu kết quả.", "info"); return; }
-                this.joinRoom(code);
+                const cfg = this.getRoomSetting(code);
+                if (cfg.isLocked) {
+                    return Utils.toast("🔒 Phòng thi này đang tạm khóa. Vui lòng chờ Giáo viên mở phòng!", "error");
+                }
+                const attemptCount = this.getStudentRoomAttemptCount(code);
+                if (cfg.maxAttempts === 1 && attemptCount >= 1) {
+                    return Utils.toast("⛔ Phòng thi này chỉ cho phép làm 1 lượt duy nhất! Hãy bấm 'Bảng Điểm Của Tôi' để xem kết quả.", "error");
+                }
+                this.joinRoom(code, attemptCount > 0);
             },
             examVariantCode: "",
 
@@ -1445,22 +1598,21 @@
             joinRoom(roomId, isRetry) {
                 const room = this.database.find(r => r.roomId === roomId);
                 if (!room) return Utils.toast("Mã phòng không tồn tại hoặc đã bị khóa!", "error");
-                const now = Date.now();
-                this.isSubmitted = false; this.currentIndex = 0;
-                this.matrixFilter = 'all'; this.warned5Min = false;
-                if (typeof this.unpinPassage === 'function') this.unpinPassage();
 
+                const cfg = this.getRoomSetting(roomId);
+                if (cfg.isLocked) {
+                    return Utils.toast("🔒 Phòng thi này đang tạm khóa. Vui lòng chờ Giáo viên mở phòng!", "error");
+                }
+
+                const now = Date.now();
                 let restored = false;
+                let draftObj = null;
                 try {
                     const rawDraft = localStorage.getItem(this.getDraftKey(roomId));
                     if (rawDraft) {
                         const draft = JSON.parse(rawDraft);
                         if (draft && draft.endTime && draft.endTime > now + 5000) {
-                            this.roomData = { ...room, startTime: now, endTime: draft.endTime };
-                            this.examData = (Array.isArray(draft.examData) && draft.examData.length > 0) ? draft.examData : JSON.parse(JSON.stringify(room.questions || []));
-                            this.examVariantCode = draft.examVariantCode || "";
-                            this.answers = draft.answers || {};
-                            this.flags = draft.flags || {};
+                            draftObj = draft;
                             restored = true;
                         } else {
                             localStorage.removeItem(this.getDraftKey(roomId));
@@ -1468,7 +1620,21 @@
                     }
                 } catch (e) {}
 
-                if (!restored) {
+                if (!restored && cfg.maxAttempts === 1 && this.getStudentRoomAttemptCount(roomId) >= 1) {
+                    return Utils.toast("⛔ Phòng thi này chỉ cho phép làm 1 lượt duy nhất!", "error");
+                }
+
+                this.isSubmitted = false; this.currentIndex = 0;
+                this.matrixFilter = 'all'; this.warned5Min = false;
+                if (typeof this.unpinPassage === 'function') this.unpinPassage();
+
+                if (restored && draftObj) {
+                    this.roomData = { ...room, startTime: now, endTime: draftObj.endTime };
+                    this.examData = (Array.isArray(draftObj.examData) && draftObj.examData.length > 0) ? draftObj.examData : JSON.parse(JSON.stringify(room.questions || []));
+                    this.examVariantCode = draftObj.examVariantCode || "";
+                    this.answers = draftObj.answers || {};
+                    this.flags = draftObj.flags || {};
+                } else {
                     this.roomData = { ...room, startTime: now + 5000, endTime: now + 5000 + (room.durationMinutes * 60 * 1000) };
                     if (isRetry === true) {
                         this.examData = this.buildShuffledExamData(room.questions, room);
@@ -2098,36 +2264,38 @@
                         const qLabelNum = ent.displayNum;
                         const qFullLbl = ent.fullLabel || ('Câu ' + qLabelNum);
                         const flagSpan = `<span id="mat-flag-${q.id}" class="${this.flags && this.flags[q.id] ? '' : 'hidden'} ml-1 text-[10px]" title="Đã cắm cờ">🚩</span>`;
+                        const jumpAttr = `onclick="ArenaEngine.jumpToQuestionFromMatrix('${q.id}', ${ent.rawIdx})"`;
 
                         if (q.type === 'single') {
-                            let itemHTML = `<div class="flex items-center justify-between py-1.5 border-b border-slate-100 hover:bg-slate-50 transition px-2" id="mat-q-${q.id}">`;
-                            itemHTML += `<span class="font-black text-[12px] text-slate-700 w-16 cursor-pointer hover:text-blue-600 flex items-center" onclick="document.getElementById('q-block-${q.id}').scrollIntoView({behavior:'smooth', block: 'center'});">${qFullLbl}:${flagSpan}</span><div class="flex space-x-1.5">`;
+                            let itemHTML = `<div class="flex items-center justify-between py-1.5 border-b border-slate-100 hover:bg-slate-50 transition px-1.5 lg:px-2" id="mat-q-${q.id}">`;
+                            itemHTML += `<span class="font-black text-[11px] lg:text-[12px] text-slate-700 w-14 lg:w-16 cursor-pointer hover:text-blue-600 flex items-center shrink-0" ${jumpAttr}>${qFullLbl}:${flagSpan}</span><div class="flex space-x-1 lg:space-x-1.5">`;
                             const labels = ["A", "B", "C", "D"]; const options = q.a || labels;
                             options.forEach((ans, aIdx) => {
                                 if (aIdx >= 4) return; let lb = labels[aIdx] || String.fromCharCode(65+aIdx); let dis = this.isSubmitted ? 'disabled style="cursor: not-allowed;"' : '';
-                                itemHTML += `<button type="button" ${dis} onclick="ArenaEngine.selectSingle('${q.id}', ${aIdx})" id="mat-btn-${q.id}-${aIdx}" class="w-6 h-6 flex items-center justify-center rounded-full border border-slate-300 text-[10px] font-black transition-all bg-slate-50 text-slate-500 hover:bg-blue-100 shadow-sm relative">${lb}</button>`;
+                                itemHTML += `<button type="button" ${dis} onclick="ArenaEngine.selectSingle('${q.id}', ${aIdx})" id="mat-btn-${q.id}-${aIdx}" class="w-5 h-5 lg:w-6 lg:h-6 flex items-center justify-center rounded-full border border-slate-300 text-[9px] lg:text-[10px] font-black transition-all bg-slate-50 text-slate-500 hover:bg-blue-100 shadow-sm relative">${lb}</button>`;
                             });
                             itemHTML += `</div></div>`;
                             return itemHTML;
                         } else if (q.type === 'tf') {
-                            let itemHTML = `<div class="py-2 border-b border-slate-100 px-2" id="mat-q-${q.id}"><div class="font-black text-[12px] text-slate-700 mb-1.5 cursor-pointer hover:text-blue-600 flex items-center" onclick="document.getElementById('q-block-${q.id}').scrollIntoView({behavior:'smooth', block: 'center'});">${qFullLbl}:${flagSpan}</div><div class="grid grid-cols-2 gap-x-2 md:gap-x-3 gap-y-1.5">`;
+                            const tfWarnDot = `<span id="mat-tf-warn-${q.id}" class="hidden ml-1.5 w-2 h-2 rounded-full bg-amber-500 inline-block" title="Câu Đúng/Sai còn thiếu ý chưa chọn"></span>`;
+                            let itemHTML = `<div class="py-1.5 lg:py-2 border-b border-slate-100 px-1.5 lg:px-2" id="mat-q-${q.id}"><div class="font-black text-[11px] lg:text-[12px] text-slate-700 mb-1.5 cursor-pointer hover:text-blue-600 flex items-center" ${jumpAttr}>${qFullLbl}:${flagSpan}${tfWarnDot}</div><div class="grid grid-cols-2 gap-x-1.5 lg:gap-x-3 gap-y-1.5">`;
                             const stmts = q.statements || [1,2,3,4];
                             stmts.forEach((stmt, sIdx) => {
                                 const pre = String.fromCharCode(97+sIdx); let dis = this.isSubmitted ? 'disabled style="cursor: not-allowed;"' : '';
-                                itemHTML += `<div class="flex items-center justify-between bg-slate-50 px-1 md:px-1.5 py-1 rounded border border-slate-200/60"><span class="text-[10px] md:text-[11px] font-black text-slate-600">${pre})</span><div class="flex space-x-1"><button type="button" ${dis} onclick="ArenaEngine.selectTF('${q.id}', ${sIdx}, 'T')" id="mat-tf-${q.id}-${sIdx}-T" class="w-5 h-5 md:w-6 flex items-center justify-center rounded border border-slate-300 text-[8px] md:text-[9px] font-black transition-all bg-white text-slate-500 hover:bg-slate-200 shadow-sm">Đ</button><button type="button" ${dis} onclick="ArenaEngine.selectTF('${q.id}', ${sIdx}, 'F')" id="mat-tf-${q.id}-${sIdx}-F" class="w-5 h-5 md:w-6 flex items-center justify-center rounded border border-slate-300 text-[8px] md:text-[9px] font-black transition-all bg-white text-slate-500 hover:bg-slate-200 shadow-sm">S</button></div></div>`;
+                                itemHTML += `<div class="flex items-center justify-between bg-slate-50 px-1 lg:px-1.5 py-1 rounded border border-slate-200/60"><span class="text-[10px] lg:text-[11px] font-black text-slate-600">${pre})</span><div class="flex space-x-1"><button type="button" ${dis} onclick="ArenaEngine.selectTF('${q.id}', ${sIdx}, 'T')" id="mat-tf-${q.id}-${sIdx}-T" class="w-5 h-5 lg:w-6 flex items-center justify-center rounded border border-slate-300 text-[8px] lg:text-[9px] font-black transition-all bg-white text-slate-500 hover:bg-slate-200 shadow-sm">Đ</button><button type="button" ${dis} onclick="ArenaEngine.selectTF('${q.id}', ${sIdx}, 'F')" id="mat-tf-${q.id}-${sIdx}-F" class="w-5 h-5 lg:w-6 flex items-center justify-center rounded border border-slate-300 text-[8px] lg:text-[9px] font-black transition-all bg-white text-slate-500 hover:bg-slate-200 shadow-sm">S</button></div></div>`;
                             });
                             itemHTML += `</div></div>`;
                             return itemHTML;
                         } else {
-                            let itemHTML = `<div class="py-2 border-b border-slate-100 px-2 flex items-center justify-between" id="mat-q-${q.id}"><span class="font-black text-[12px] text-slate-700 w-16 cursor-pointer hover:text-blue-600 shrink-0 flex items-center" onclick="document.getElementById('q-block-${q.id}').scrollIntoView({behavior:'smooth', block: 'center'});">${qFullLbl}:${flagSpan}</span>`;
-                            if (q.type === 'short') { let dis = this.isSubmitted ? 'disabled style="cursor: not-allowed;"' : ''; itemHTML += `<input type="text" ${dis} oninput="ArenaEngine.inputShort('${q.id}', this.value)" id="mat-short-${q.id}" class="flex-1 w-full max-w-[150px] border border-slate-300 rounded px-2 py-1 text-[11px] font-bold text-blue-700 focus:border-blue-500 outline-none text-center shadow-inner ml-2" placeholder="...">`; }
-                            else { itemHTML += `<span class="flex-1 text-center text-[9px] md:text-[10px] text-slate-400 italic font-medium ml-2">${ent.isNoi ? 'Thu âm bên tờ đề' : 'Làm bài bên tờ đề'}</span>`; }
+                            let itemHTML = `<div class="py-1.5 lg:py-2 border-b border-slate-100 px-1.5 lg:px-2 flex items-center justify-between" id="mat-q-${q.id}"><span class="font-black text-[11px] lg:text-[12px] text-slate-700 w-14 lg:w-16 cursor-pointer hover:text-blue-600 shrink-0 flex items-center" ${jumpAttr}>${qFullLbl}:${flagSpan}</span>`;
+                            if (q.type === 'short') { let dis = this.isSubmitted ? 'disabled style="cursor: not-allowed;"' : ''; itemHTML += `<input type="text" ${dis} oninput="ArenaEngine.inputShort('${q.id}', this.value)" id="mat-short-${q.id}" class="flex-1 w-full min-w-0 max-w-[150px] border border-slate-300 rounded px-1.5 lg:px-2 py-1 text-[11px] font-bold text-blue-700 focus:border-blue-500 outline-none text-center shadow-inner ml-1.5 lg:ml-2" placeholder="...">`; }
+                            else { itemHTML += `<span class="flex-1 text-center text-[9px] lg:text-[10px] text-slate-400 italic font-medium ml-1.5">${ent.isNoi ? 'Thu âm bên tờ đề' : 'Làm bên tờ đề'}</span>`; }
                             itemHTML += `</div>`;
                             return itemHTML;
                         }
                     }).join('');
 
-                    groupBlocks.push(`<div class="mb-3 md:mb-4"><div class="${grp.matrixHdr} text-[9px] md:text-[10px] font-black px-3 py-1.5 uppercase tracking-widest sticky top-0 z-10 shadow-sm truncate" title="${Utils.escapeHTML(grp.heading)}">${Utils.escapeHTML(grp.heading)}</div><div class="bg-white border-x border-b border-slate-200 rounded-b-lg overflow-hidden pb-1 shadow-sm">${rowsHTML}</div></div>`);
+                    groupBlocks.push(`<div class="mb-2.5 lg:mb-4"><div class="${grp.matrixHdr} text-[9px] lg:text-[10px] font-black px-2.5 lg:px-3 py-1.5 uppercase tracking-wider lg:tracking-widest sticky top-0 z-10 shadow-sm truncate" title="${Utils.escapeHTML(grp.heading)}">${Utils.escapeHTML(grp.heading)}</div><div class="bg-white border-x border-b border-slate-200 rounded-b-lg overflow-hidden pb-1 shadow-sm">${rowsHTML}</div></div>`);
                 });
 
                 if (groupBlocks.length === 0) {
@@ -2177,6 +2345,18 @@
                 } 
                 else if (q.type === 'tf') {
                     const stmts = q.statements || [1,2,3,4];
+                    const tfWarnEl = document.getElementById(`mat-tf-warn-${q.id}`);
+                    if (tfWarnEl) {
+                        const ansObj = this.answers[q.id];
+                        let chosenCnt = 0;
+                        if (ansObj) {
+                            stmts.forEach(function(_, i) {
+                                if (ansObj[i] === 'T' || ansObj[i] === 'F') chosenCnt++;
+                            });
+                        }
+                        if (!this.isSubmitted && chosenCnt > 0 && chosenCnt < stmts.length) tfWarnEl.classList.remove('hidden');
+                        else tfWarnEl.classList.add('hidden');
+                    }
                     stmts.forEach((stmt, sIdx) => {
                         const val = this.answers[q.id] ? this.answers[q.id][sIdx] : null; const correctVal = q.correct ? q.correct[sIdx] : null;
                         const inT = document.getElementById(`in-tf-${q.id}-${sIdx}-T`); const inF = document.getElementById(`in-tf-${q.id}-${sIdx}-F`); const matT = document.getElementById(`mat-tf-${q.id}-${sIdx}-T`); const matF = document.getElementById(`mat-tf-${q.id}-${sIdx}-F`);
@@ -2492,6 +2672,52 @@
                                     const historyArray = Array.from(safeMap.values());
 
                                     userRef.update({ stats: stats, coins: newCoins, history: historyArray });
+                                    const arenaCfg = this.roomData ? this.getRoomSetting(this.roomData.roomId) : { hideAnswers: false };
+                                    if (!arenaCfg.hideAnswers) {
+                                        try {
+                                            const existingCloudMistakes = Array.isArray(userData.mistakes) ? userData.mistakes : Object.values(userData.mistakes || {});
+                                            const mMap = new Map();
+                                            existingCloudMistakes.forEach(function(m) { if (m && m.q) mMap.set(m.q, m); });
+
+                                            const subjLabel = (this.roomData && this.roomData.subject) ? String(this.roomData.subject) : "Arena";
+                                            const isEng = subjLabel.toLowerCase().indexOf('anh') !== -1 || subjLabel.toLowerCase().indexOf('english') !== -1;
+
+                                            (this.examData || []).forEach((q) => {
+                                                if (!q || q.type !== 'single' || !Array.isArray(q.a) || q.a.length < 2) return;
+                                                const isCorrect = (q.correct !== undefined && this.answers[q.id] !== undefined && String(this.answers[q.id]) === String(q.correct));
+                                                if (!isCorrect) {
+                                                    const cleanQText = String(q.q || "").replace(/^\s*\[(?:PART|SECTION)\s*:\s*[^\]]+\]\s*/i, '').replace(/\[AUDIO:[^\]]+\]/gi, '').split('{SCRIPT}')[0].trim();
+                                                    if (cleanQText && !mMap.has(cleanQText)) {
+                                                        const cleanOpts = q.a.slice(0, 4).map(function(opt) { return Utils.cleanOptionPrefix(opt); });
+                                                        const corIdx = parseInt(q.correct, 10) || 0;
+                                                        mMap.set(cleanQText, {
+                                                            chuong: this.roomData ? (this.roomData.roomName || subjLabel) : "Arena",
+                                                            q: cleanQText,
+                                                            a: cleanOpts,
+                                                            correct: corIdx,
+                                                            targetText: cleanOpts[corIdx] || "",
+                                                            skill: "doc",
+                                                            isEssay: false,
+                                                            isEnglish: isEng,
+                                                            resource: q.explain ? String(q.explain) : "",
+                                                            image: q.image ? Utils.resolveMediaUrl(q.image, 'image') : "",
+                                                            audio: "",
+                                                            userSelected: null,
+                                                            spokenText: "",
+                                                            writtenText: "",
+                                                            accuracy: 0,
+                                                            status: "unanswered",
+                                                            listenCount: 0
+                                                        });
+                                                    }
+                                                }
+                                            });
+
+                                            const mergedMistakes = JSON.parse(JSON.stringify(Array.from(mMap.values()).slice(0, 50)));
+                                            firebase.database().ref('users/' + lastUser.uid + '/mistakes').set(mergedMistakes);
+                                            localStorage.setItem('eduMasterMistakes_' + lastUser.uid, JSON.stringify(mergedMistakes));
+                                        } catch (mErr) {}
+                                    }
 
                                     try {
                                         const allProfiles = JSON.parse(localStorage.getItem('eduMasterProfiles') || "{}");
@@ -2510,6 +2736,19 @@
                     document.getElementById('res-essay').innerText = essayTotal > 0 ? `${essayTotal} câu (Chờ duyệt)` : 'Không có';
                     document.getElementById('result-modal').classList.remove('hidden');
                     document.getElementById('result-modal').style.display = 'flex';
+                    const submitCfg = this.roomData ? this.getRoomSetting(this.roomData.roomId) : { hideAnswers: false };
+                    const btnReviewModal = document.getElementById('btn-close-modal');
+                    if (btnReviewModal) {
+                        if (submitCfg.hideAnswers) {
+                            btnReviewModal.disabled = true;
+                            btnReviewModal.className = "w-full bg-slate-300 text-slate-500 font-black py-3 rounded-xl cursor-not-allowed uppercase text-xs tracking-wider";
+                            btnReviewModal.innerText = "🙈 Đáp án đang tạm ẩn";
+                        } else {
+                            btnReviewModal.disabled = false;
+                            btnReviewModal.className = "w-full bg-blue-600 text-white font-black py-3 rounded-xl shadow-lg hover:bg-blue-700 transition uppercase text-xs tracking-wider";
+                            btnReviewModal.innerText = "Mở Lời Giải";
+                        }
+                    }
                 } catch(e) { console.error("Lỗi khi nộp bài:", e); Utils.toast("Có lỗi xảy ra khi nộp bài. Vui lòng báo Giám thị.", "error"); }
             },
 
@@ -2561,7 +2800,12 @@
                     Utils.toast(wrongCount > 0 ? `Đang lọc ${wrongCount} câu làm sai / chưa đạt.` : "🎉 Bạn không có câu trắc nghiệm nào làm sai!", "info");
                 }
             },
-            enterReviewMode() {
+            enterReviewMode() { 
+                const revCfg = this.roomData ? this.getRoomSetting(this.roomData.roomId) : { hideAnswers: false };
+                    if (revCfg.hideAnswers) {
+                        Utils.toast("🙈 Giáo viên đang tạm ẩn đáp án phòng thi này!", "info");
+                        return;
+                    }
                 try {
                     this.isSubmitted = true; this.reviewWrongOnly = false;
                     const modal = document.getElementById('result-modal'); if (modal) { modal.classList.add('hidden'); modal.style.display = 'none'; }
