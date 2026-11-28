@@ -27,6 +27,38 @@
     </script>
     
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Polyfill ResizeObserver giúp Chart.js 3.x hiển thị trên iOS 12 -->
+    <script>
+        if (typeof window.ResizeObserver === 'undefined') {
+            window.ResizeObserver = function(callback) {
+                this._callback = callback;
+                this._targets = [];
+                var self = this;
+                this._onResize = function() {
+                    if (!self._targets.length) return;
+                    var entries = self._targets.map(function(el) {
+                        return { target: el, contentRect: el.getBoundingClientRect() };
+                    });
+                    try { self._callback(entries, self); } catch (e) {}
+                };
+                window.addEventListener('resize', this._onResize);
+            };
+            window.ResizeObserver.prototype.observe = function(el) {
+                if (this._targets.indexOf(el) === -1) {
+                    this._targets.push(el);
+                    var self = this;
+                    setTimeout(function() { self._onResize(); }, 60);
+                }
+            };
+            window.ResizeObserver.prototype.unobserve = function(el) {
+                this._targets = this._targets.filter(function(t) { return t !== el; });
+            };
+            window.ResizeObserver.prototype.disconnect = function() {
+                this._targets = [];
+                window.removeEventListener('resize', this._onResize);
+            };
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 
     <script>
@@ -140,6 +172,7 @@
         .z-\[100\] { z-index: 100 !important; } .z-\[9999\] { z-index: 9999 !important; }
         .text-\[9px\] { font-size: 9px !important; line-height: 13px !important; } .text-\[10px\] { font-size: 10px !important; line-height: 14px !important; } .text-\[11px\] { font-size: 11px !important; line-height: 16px !important; } .text-\[13px\] { font-size: 13px !important; line-height: 18px !important; }
         .max-w-\[180px\] { max-width: 180px !important; } .h-\[calc\(100vh-250px\)\] { height: calc(100vh - 250px) !important; } .max-h-\[92vh\] { max-height: 92vh !important; }
+        .max-w-\[220px\] { max-width: 220px !important; }
 
         /* Bù khoảng cách flex-gap riêng cho Safari 12 (không ảnh hưởng trình duyệt mới) */
         .ios12-fallback .flex.gap-1\.5 > * { margin-right: 6px; margin-bottom: 6px; }
@@ -158,7 +191,7 @@
         mjx-container[display="true"], mjx-container { display: inline-block !important; margin: 0 4px !important; }
     </style>
 </head>
-<body class="bg-slate-100 h-screen w-screen overflow-hidden flex text-slate-800">
+<body class="bg-slate-100 fixed top-0 right-0 bottom-0 left-0 w-full h-full overflow-hidden flex text-slate-800">
 
     <div id="toast-container" class="fixed top-6 right-6 z-[100] flex flex-col space-y-3 pointer-events-none"></div>
 
@@ -186,9 +219,12 @@
         </div>
     </div>
 
+    <!-- LỚP NỀN MỜ SIDEBAR CHO MOBILE / IPAD -->
+    <div id="admin-sidebar-overlay" onclick="AdminEngine.toggleSidebar(false)" class="fixed top-0 right-0 bottom-0 left-0 bg-slate-900/80 z-40 hidden lg:hidden transition-opacity"></div>
+
     <!-- SIDEBAR -->
-    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 border-r border-slate-800 shadow-xl">
-        <div class="h-16 flex items-center justify-between px-6 border-b border-slate-800">
+    <aside id="admin-sidebar" class="fixed lg:relative top-0 bottom-0 left-0 z-50 w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 border-r border-slate-800 shadow-2xl lg:shadow-xl transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out h-full">
+        <div class="h-14 md:h-16 flex items-center justify-between px-5 border-b border-slate-800 shrink-0">
             <div class="flex items-center space-x-2">
                 <span class="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white text-base font-black shadow-md">⚡</span>
                 <div>
@@ -196,6 +232,7 @@
                     <span class="text-[10px] text-blue-400 font-bold uppercase tracking-widest">Admin Control</span>
                 </div>
             </div>
+            <button type="button" onclick="AdminEngine.toggleSidebar(false)" class="lg:hidden w-8 h-8 rounded-lg bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center font-black text-sm">✕</button>
         </div>
 
         <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto custom-scrollbar">
@@ -246,30 +283,48 @@
     </aside>
 
     <!-- MAIN WORKSPACE -->
-    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
-        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 shadow-sm">
-            <div class="flex items-center space-x-3">
-                <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest" id="header-title">Bảng Tổng Quan Hệ thống</h2>
-                <button onclick="AdminEngine.refreshAllData()" class="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-slate-100 transition" title="Làm mới dữ liệu từ Arena">🔄</button>
+    <main class="flex-1 min-w-0 w-full flex flex-col h-full overflow-hidden relative">
+        <header class="h-14 md:h-16 bg-white border-b border-slate-200 flex items-center justify-between px-3 sm:px-5 lg:px-8 shrink-0 shadow-sm">
+            <div class="flex items-center space-x-2 sm:space-x-3 min-w-0">
+                <button type="button" onclick="AdminEngine.toggleSidebar()" class="lg:hidden w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-black text-lg shrink-0" title="Mở Menu">☰</button>
+                <h2 class="text-xs sm:text-sm font-black text-slate-800 uppercase tracking-wider sm:tracking-widest truncate" id="header-title">Bảng Tổng Quan Hệ thống</h2>
+                <button type="button" onclick="AdminEngine.refreshAllData()" class="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-slate-100 transition shrink-0" title="Làm mới dữ liệu từ Arena">🔄</button>
             </div>
-            <div class="flex items-center space-x-6">
-                <div class="text-xs font-bold text-slate-500 flex items-center space-x-2">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Đồng hồ khảo thí: <span id="server-time" class="text-blue-700 font-mono font-black">00:00:00</span>
+            <div class="flex items-center space-x-2 sm:space-x-3 lg:space-x-5 shrink-0 ml-2">
+                <div class="hidden sm:flex text-xs font-bold text-slate-500 items-center space-x-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                    <span class="hidden xl:inline">Đồng hồ khảo thí:</span>
+                    <span id="server-time" class="text-blue-700 font-mono font-black">00:00:00</span>
                 </div>
-                <button onclick="AdminEngine.sendBroadcast()" class="text-[11px] font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg border border-blue-200 transition flex items-center space-x-1">
-                    <span>📢</span><span>Phát Thông Báo</span>
+                <button type="button" onclick="AdminEngine.sendBroadcast()" class="text-[11px] font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 sm:px-3 py-1.5 rounded-lg border border-blue-200 transition flex items-center space-x-1 shrink-0" title="Phát Thông Báo">
+                    <span>📢</span><span class="hidden md:inline">Phát Thông Báo</span>
                 </button>
-                <button onclick="AdminEngine.clearAllSubmissions()" class="text-[11px] font-bold text-rose-500 hover:bg-rose-50 px-2.5 py-1.5 rounded-lg border border-rose-200 transition">
-                    Xóa Dữ Liệu Bài Thi
+                <button type="button" onclick="AdminEngine.clearAllSubmissions()" class="text-[11px] font-bold text-rose-500 hover:bg-rose-50 px-2.5 py-1.5 rounded-lg border border-rose-200 transition flex items-center space-x-1 shrink-0" title="Xóa Dữ Liệu Bài Thi">
+                    <span>🗑️</span><span class="hidden md:inline">Xóa Bài Thi</span>
                 </button>
-                
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
+        <div class="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-8 custom-scrollbar">
             
             <!-- 1. DASHBOARD OVERVIEW -->
             <div id="tab-dashboard" class="tab-content active space-y-6">
+                <!-- THANH LỌC PHÒNG THI / LỚP & XUẤT EXCEL -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between space-y-3 md:space-y-0">
+                    <div class="flex flex-wrap items-center">
+                        <span class="text-[11px] font-black uppercase tracking-wider text-slate-500 mr-3 mb-2 md:mb-0">🎯 Bộ lọc thống kê:</span>
+                        <select id="dash-filter-room" onchange="AdminEngine.onDashboardFilterChange()" class="mr-2 mb-2 md:mb-0 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-blue-500 max-w-[220px]">
+                            <option value="all">Tất cả Phòng thi</option>
+                        </select>
+                        <select id="dash-filter-class" onchange="AdminEngine.onDashboardFilterChange()" class="mr-2 mb-2 md:mb-0 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-blue-500">
+                            <option value="all">Tất cả Lớp</option>
+                        </select>
+                    </div>
+                    <button type="button" onclick="AdminEngine.exportSubmissionsCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2 px-4 rounded-xl text-xs uppercase tracking-wider transition shadow-md flex items-center justify-center space-x-1.5 shrink-0">
+                        <span>📥</span> <span>Xuất Bảng Điểm (.CSV)</span>
+                    </button>
+                </div>
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
                         <span class="text-[11px] font-black uppercase tracking-wider text-slate-400">Kho Đề Thi (data_arena)</span>
@@ -282,7 +337,7 @@
                         <span class="text-[11px] font-black uppercase tracking-wider text-slate-400">Tổng Lượt Bài Nộp</span>
                         <div class="flex items-baseline justify-between mt-2">
                             <span class="text-3xl font-black text-emerald-600" id="stat-submissions">0</span>
-                            <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Từ Arena</span>
+                            <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Theo bộ lọc</span>
                         </div>
                     </div>
                     <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
@@ -306,7 +361,7 @@
                         <div class="flex justify-between items-center mb-4">
                             <div>
                                 <h3 class="text-xs font-black uppercase tracking-widest text-slate-700">Phổ Điểm Thí Sinh Đã Nộp</h3>
-                                <p class="text-[11px] font-medium text-slate-400">Phân bổ điểm số theo thang điểm 10 từ các bài thi thực tế</p>
+                                <p class="text-[11px] font-medium text-slate-400">Phân bổ điểm số theo thang điểm 10 (tự động cập nhật theo bộ lọc)</p>
                             </div>
                         </div>
                         <div class="h-64 relative">
@@ -317,9 +372,23 @@
                     <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
                         <h3 class="text-xs font-black uppercase tracking-widest text-slate-700 mb-2">Tỉ Lệ Hoàn Thành & Duyệt Bài</h3>
                         <p class="text-[11px] font-medium text-slate-400 mb-4">Tiến độ công bố điểm cho học sinh</p>
-                        <div class="flex-1 relative flex items-center justify-center">
+                        <div class="h-64 relative flex items-center justify-center">
                             <canvas id="statusChart"></canvas>
                         </div>
+                    </div>
+                </div>
+
+                <!-- PHÂN TÍCH CÂU HỎI SAI NHIỀU NHẤT (ITEM ANALYSIS) -->
+                <div id="item-analysis-panel" class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-xs font-black uppercase tracking-widest text-slate-700">🔍 Top 5 Câu Hỏi Học Sinh Sai Nhiều Nhất</h3>
+                            <p class="text-[11px] font-medium text-slate-400">Thống kê tự động giúp giáo viên chữa bài trọng tâm trên lớp</p>
+                        </div>
+                        <span id="item-analysis-badge" class="mt-2 sm:mt-0 text-[10px] font-black uppercase px-2.5 py-1 rounded-lg bg-rose-50 text-rose-600 border border-rose-200 self-start sm:self-auto">0 câu phân tích</span>
+                    </div>
+                    <div id="item-analysis-body" class="space-y-3">
+                        <div class="py-6 text-center text-xs text-slate-400 font-semibold">Chưa đủ dữ liệu bài nộp để phân tích.</div>
                     </div>
                 </div>
 
@@ -788,11 +857,65 @@
                 });
             },
 
+            roomSettingsMap: {},
+
+            safeRoomKey(roomId) {
+                return String(roomId || "").replace(/[.#$\[\]\/]/g, "_");
+            },
+
+            getRoomSetting(roomId) {
+                const safeKey = this.safeRoomKey(roomId);
+                const raw = (this.roomSettingsMap && this.roomSettingsMap[safeKey]) ? this.roomSettingsMap[safeKey] : {};
+                return {
+                    isLocked: Boolean(raw.isLocked),
+                    maxAttempts: Number(raw.maxAttempts) === 1 ? 1 : 0,
+                    hideAnswers: Boolean(raw.hideAnswers)
+                };
+            },
+
+            listenToRoomSettings() {
+                if (!window.firebase || !firebase.database) return;
+                firebase.database().ref('room_settings').on('value', (snap) => {
+                    this.roomSettingsMap = snap.val() || {};
+                    this.renderRoomsTable();
+                });
+            },
+
+            toggleRoomSetting(roomId, field) {
+                if (!window.firebase || !firebase.database) {
+                    return Utils.toast("Chưa kết nối Firebase!", "error");
+                }
+                const safeKey = this.safeRoomKey(roomId);
+                const cur = this.getRoomSetting(roomId);
+                const updates = { updatedAt: firebase.database.ServerValue.TIMESTAMP };
+
+                if (field === 'isLocked') {
+                    updates.isLocked = !cur.isLocked;
+                } else if (field === 'maxAttempts') {
+                    updates.maxAttempts = (cur.maxAttempts === 1) ? 0 : 1;
+                } else if (field === 'hideAnswers') {
+                    updates.hideAnswers = !cur.hideAnswers;
+                } else {
+                    return;
+                }
+
+                firebase.database().ref('room_settings/' + safeKey).update(updates)
+                    .then(() => {
+                        let msg = "Đã cập nhật cấu hình phòng " + roomId;
+                        if (field === 'isLocked') msg = updates.isLocked ? ("🔒 Đã KHÓA phòng " + roomId) : ("🔓 Đã MỞ phòng " + roomId);
+                        if (field === 'maxAttempts') msg = updates.maxAttempts === 1 ? ("1️⃣ Phòng " + roomId + ": Giới hạn 1 lượt thi") : ("♾️ Phòng " + roomId + ": Mở tự luyện nhiều lượt");
+                        if (field === 'hideAnswers') msg = updates.hideAnswers ? ("🙈 Phòng " + roomId + ": Đã ẨN đáp án & lời giải") : ("👁️ Phòng " + roomId + ": Đã HIỆN đáp án & lời giải");
+                        Utils.toast(msg, "success");
+                    })
+                    .catch(err => Utils.toast("Lỗi cập nhật cấu hình: " + err.message, "error"));
+            },
+
             init() {
                 this.checkAuth();
                 this.listenToUsers();
                 this.listenToOnlinePresence();
                 this.listenToExamResults();
+                this.listenToRoomSettings();
 
                 setInterval(() => {
                     const d = new Date();
@@ -1145,6 +1268,24 @@
                 }
             },
 
+            toggleSidebar(forceState) {
+                const sidebar = document.getElementById('admin-sidebar');
+                const overlay = document.getElementById('admin-sidebar-overlay');
+                if (!sidebar || !overlay) return;
+                const isClosed = sidebar.classList.contains('-translate-x-full');
+                const shouldOpen = (typeof forceState === 'boolean') ? forceState : isClosed;
+
+                if (shouldOpen) {
+                    sidebar.classList.remove('-translate-x-full');
+                    sidebar.classList.add('translate-x-0');
+                    overlay.classList.remove('hidden');
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                    sidebar.classList.remove('translate-x-0');
+                    overlay.classList.add('hidden');
+                }
+            },
+
             switchTab(tabId) {
                 document.querySelectorAll('aside nav button').forEach(b => {
                     b.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition hover:bg-slate-800 text-slate-400 hover:text-white";
@@ -1169,7 +1310,9 @@
                 const targetTab = document.getElementById(`tab-${tabId}`);
                 if (targetTab) targetTab.classList.add('active');
 
-                if (tabId === 'dashboard') setTimeout(() => this.renderCharts(), 100);
+                this.toggleSidebar(false);
+
+                if (tabId === 'dashboard') setTimeout(() => this.renderCharts(), 120);
                 if (tabId === 'users') this.renderUsersTable();
                 if (tabId === 'exam-results') this.renderExamResultsTable();
             },
@@ -1245,29 +1388,287 @@
                     .catch(err => Utils.toast("Lỗi khi xóa: " + err.message, "error"));
             },
 
-            renderDashboardStats() {
-                document.getElementById('stat-exams').innerText = this.database.length;
-                document.getElementById('stat-submissions').innerText = this.submissions.length;
-                
-                const pendingCount = this.submissions.filter(s => {
-                    const hasReviewable = s.essayTotal > 0 || (s.examQuestions || []).some(q => q.type === 'short');
-                    return hasReviewable && s.status !== 'PUBLISHED';
-                }).length;
-                
-                document.getElementById('stat-pending').innerText = pendingCount;
-                document.getElementById('badge-pending').innerText = pendingCount;
+            dashFilterRoom: 'all',
+            dashFilterClass: 'all',
 
-                const cheatTotal = this.submissions.filter(s => s.cheatCount > 0).length;
-                document.getElementById('stat-cheats').innerText = cheatTotal;
-                document.getElementById('badge-cheat').innerText = cheatTotal;
+            getFilteredSubmissions() {
+                const roomVal = this.dashFilterRoom || 'all';
+                const clsVal = this.dashFilterClass || 'all';
+                return (this.submissions || []).filter(function(s) {
+                    if (!s) return false;
+                    if (roomVal !== 'all' && String(s.roomId || '') !== roomVal) return false;
+                    if (clsVal !== 'all' && String(s.className || '').trim().toUpperCase() !== clsVal) return false;
+                    return true;
+                });
+            },
 
-                const recentBody = document.getElementById('recent-submissions-body');
-                if (this.submissions.length === 0) {
-                    recentBody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400">Chưa có bài thi nào nộp từ Arena.</td></tr>`;
+            populateDashboardFilters() {
+                const roomSel = document.getElementById('dash-filter-room');
+                const clsSel = document.getElementById('dash-filter-class');
+                if (!roomSel || !clsSel) return;
+
+                const roomMap = new Map();
+                const classSet = new Set();
+
+                (this.submissions || []).forEach(function(s) {
+                    if (!s) return;
+                    if (s.roomId) {
+                        const rId = String(s.roomId);
+                        if (!roomMap.has(rId)) roomMap.set(rId, s.roomName || rId);
+                    }
+                    if (s.className && String(s.className).trim() !== '---') {
+                        classSet.add(String(s.className).trim().toUpperCase());
+                    }
+                });
+
+                const prevRoom = this.dashFilterRoom || 'all';
+                const prevClass = this.dashFilterClass || 'all';
+
+                let roomOpts = '<option value="all">Tất cả Phòng thi (' + roomMap.size + ')</option>';
+                Array.from(roomMap.entries()).forEach(function(entry) {
+                    roomOpts += '<option value="' + Utils.escapeHTML(entry[0]) + '">' + Utils.escapeHTML(entry[0] + ' - ' + entry[1]) + '</option>';
+                });
+                roomSel.innerHTML = roomOpts;
+                if (prevRoom !== 'all' && roomMap.has(prevRoom)) {
+                    roomSel.value = prevRoom;
+                } else {
+                    this.dashFilterRoom = 'all';
+                    roomSel.value = 'all';
+                }
+
+                let clsOpts = '<option value="all">Tất cả Lớp (' + classSet.size + ')</option>';
+                Array.from(classSet).sort().forEach(function(c) {
+                    clsOpts += '<option value="' + Utils.escapeHTML(c) + '">Lớp ' + Utils.escapeHTML(c) + '</option>';
+                });
+                clsSel.innerHTML = clsOpts;
+                if (prevClass !== 'all' && classSet.has(prevClass)) {
+                    clsSel.value = prevClass;
+                } else {
+                    this.dashFilterClass = 'all';
+                    clsSel.value = 'all';
+                }
+            },
+
+            onDashboardFilterChange() {
+                const roomSel = document.getElementById('dash-filter-room');
+                const clsSel = document.getElementById('dash-filter-class');
+                this.dashFilterRoom = roomSel ? roomSel.value : 'all';
+                this.dashFilterClass = clsSel ? clsSel.value : 'all';
+                this.renderDashboardStats();
+                this.renderCharts();
+            },
+
+            renderItemAnalysis() {
+                const body = document.getElementById('item-analysis-body');
+                const badge = document.getElementById('item-analysis-badge');
+                if (!body) return;
+
+                const subs = this.getFilteredSubmissions();
+                if (subs.length === 0) {
+                    if (badge) badge.innerText = '0 câu phân tích';
+                    body.innerHTML = '<div class="py-6 text-center text-xs text-slate-400 font-semibold">Chưa có bài nộp nào khớp bộ lọc để phân tích.</div>';
                     return;
                 }
 
-                recentBody.innerHTML = this.submissions.slice(0, 8).map(s => `
+                const self = this;
+                const statsMap = new Map();
+
+                const checkShortOk = function(studentAns, correctAns) {
+                    if (studentAns === undefined || studentAns === null || String(studentAns).trim() === '') return false;
+                    const stdNorm = self.normalizeAnswer(studentAns);
+                    if (Array.isArray(correctAns)) return correctAns.some(function(c) { return self.normalizeAnswer(c) === stdNorm; });
+                    if (typeof correctAns === 'string' && correctAns.indexOf('|') !== -1) {
+                        return correctAns.split('|').some(function(c) { return self.normalizeAnswer(c) === stdNorm; });
+                    }
+                    return stdNorm === self.normalizeAnswer(correctAns);
+                };
+
+                subs.forEach(function(sub) {
+                    let qs = sub.examQuestions || [];
+                    if (qs.length === 0 && sub.roomId) {
+                        const foundRoom = (self.database || []).find(function(r) { return r && r.roomId === sub.roomId; });
+                        if (foundRoom && Array.isArray(foundRoom.questions)) qs = foundRoom.questions;
+                    }
+                    const ansMap = sub.answers || {};
+
+                    qs.forEach(function(q, qIdx) {
+                        if (!q || q.type === 'essay') return;
+                        const isNoi = (q.skill && String(q.skill).trim().toLowerCase() === 'noi') || (q.q && /\[(nói|noi)\]/i.test(q.q));
+                        if (isNoi) return;
+
+                        let isCorrect = false;
+                        const rawAns = ansMap[q.id];
+
+                        if (q.type === 'single') {
+                            isCorrect = (rawAns !== undefined && rawAns !== null && rawAns !== '') && String(rawAns) === String(q.correct);
+                        } else if (q.type === 'short') {
+                            isCorrect = checkShortOk(rawAns, q.correct);
+                        } else if (q.type === 'tf') {
+                            const corArr = q.correct || [];
+                            if (rawAns && typeof rawAns === 'object' && corArr.length > 0) {
+                                isCorrect = corArr.every(function(c, i) { return rawAns[i] === c; });
+                            }
+                        } else {
+                            return;
+                        }
+
+                        const key = String(sub.roomId || 'ROOM') + '::' + String(q.id || qIdx);
+                        if (!statsMap.has(key)) {
+                            const cleanQ = String(q.q || '').replace(/\[AUDIO:[^\]]+\]/gi, '').replace(/<[^>]+>/g, ' ').split('{SCRIPT}')[0].trim();
+                            statsMap.set(key, {
+                                roomId: sub.roomId || '---',
+                                qNum: qIdx + 1,
+                                qType: q.type,
+                                qText: cleanQ.length > 140 ? (cleanQ.slice(0, 140) + '...') : cleanQ,
+                                total: 0,
+                                wrong: 0
+                            });
+                        }
+                        const rec = statsMap.get(key);
+                        rec.total++;
+                        if (!isCorrect) rec.wrong++;
+                    });
+                });
+
+                const ranked = Array.from(statsMap.values())
+                    .filter(function(r) { return r.wrong > 0; })
+                    .map(function(r) {
+                        r.wrongRate = Math.round((r.wrong / r.total) * 100);
+                        return r;
+                    })
+                    .sort(function(a, b) {
+                        return (b.wrongRate - a.wrongRate) || (b.wrong - a.wrong);
+                    });
+
+                if (badge) badge.innerText = statsMap.size + ' câu đã quét';
+
+                if (ranked.length === 0) {
+                    body.innerHTML = '<div class="py-6 text-center text-xs text-emerald-600 font-bold">🎉 Tuyệt vời! Không phát hiện câu trắc nghiệm nào bị sai trong nhóm này.</div>';
+                    return;
+                }
+
+                const typeLabels = { single: '4 lựa chọn', tf: 'Đúng/Sai', short: 'Trả lời ngắn' };
+                body.innerHTML = ranked.slice(0, 5).map(function(item, idx) {
+                    const barColor = item.wrongRate >= 70 ? 'bg-rose-500' : (item.wrongRate >= 40 ? 'bg-amber-500' : 'bg-blue-500');
+                    return `
+                    <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col space-y-2">
+                        <div class="flex flex-wrap items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <span class="w-5 h-5 rounded-full bg-rose-600 text-white text-[10px] font-black flex items-center justify-center shrink-0">${idx + 1}</span>
+                                <span class="text-[11px] font-black text-blue-700 font-mono">${Utils.escapeHTML(item.roomId)}</span>
+                                <span class="text-[11px] font-black text-slate-800">Câu ${item.qNum}</span>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-500">${typeLabels[item.qType] || item.qType}</span>
+                            </div>
+                            <span class="text-xs font-black text-rose-600">Sai ${item.wrong}/${item.total} lượt (${item.wrongRate}%)</span>
+                        </div>
+                        <p class="text-xs text-slate-700 font-medium leading-relaxed">${item.qText}</p>
+                        <div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                            <div class="${barColor} h-full rounded-full" style="width: ${item.wrongRate}%"></div>
+                        </div>
+                    </div>`;
+                }).join('');
+
+                try {
+                    if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+                        window.MathJax.typesetPromise([body]).catch(function() {});
+                    }
+                } catch (e) {}
+            },
+
+            exportSubmissionsCSV() {
+                const subs = this.getFilteredSubmissions();
+                if (subs.length === 0) {
+                    Utils.toast('Không có dữ liệu bài nộp nào để xuất!', 'error');
+                    return;
+                }
+
+                const escCSV = function(val) {
+                    const s = (val === undefined || val === null) ? '' : String(val);
+                    return '"' + s.replace(/"/g, '""') + '"';
+                };
+
+                const headers = [
+                    'STT', 'Ho va Ten', 'Lop', 'Ma Phong', 'Ten De Thi',
+                    'Diem Trac Nghiem', 'Dung / Tong TN', 'Diem Tu Luan',
+                    'Diem Tong Ket', 'Trang Thai', 'Canh Bao Gian Lan', 'Thoi Gian Nop'
+                ];
+
+                const rows = [headers.map(escCSV).join(',')];
+                subs.forEach(function(s, idx) {
+                    const statusTxt = s.status === 'PUBLISHED' ? 'Da cong bo' : 'Cho duyet / TN';
+                    const finalSc = (s.finalScore !== undefined && s.finalScore !== null) ? s.finalScore : (s.objScore || 0);
+                    const essaySc = (s.essayScore !== undefined && s.essayScore !== null) ? s.essayScore : '';
+                    const line = [
+                        idx + 1,
+                        s.studentName || '',
+                        s.className || '',
+                        s.roomId || '',
+                        s.roomName || '',
+                        s.objScore || 0,
+                        (s.objCorrect || 0) + '/' + (s.objTotal || 0),
+                        essaySc,
+                        finalSc,
+                        statusTxt,
+                        s.cheatCount || 0,
+                        s.submittedAt || ''
+                    ];
+                    rows.push(line.map(escCSV).join(','));
+                });
+
+                const csvContent = '\uFEFF' + rows.join('\r\n');
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                const suffixRoom = this.dashFilterRoom !== 'all' ? ('_' + this.dashFilterRoom) : '';
+                const suffixCls = this.dashFilterClass !== 'all' ? ('_Lop' + this.dashFilterClass) : '';
+                const dateTag = new Date().toISOString().slice(0, 10);
+
+                a.href = url;
+                a.download = 'BangDiem_EduMaster' + suffixRoom + suffixCls + '_' + dateTag + '.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+
+                Utils.toast('Đã xuất bảng điểm ' + subs.length + ' thí sinh (.CSV)!', 'success');
+            },
+
+            renderDashboardStats() {
+                this.populateDashboardFilters();
+                const filteredSubs = this.getFilteredSubmissions();
+
+                document.getElementById('stat-exams').innerText = this.database.length;
+                document.getElementById('stat-submissions').innerText = filteredSubs.length;
+
+                // Huy hiệu Sidebar luôn giữ tổng toàn hệ thống
+                const globalPending = this.submissions.filter(function(s) {
+                    const hasReviewable = s.essayTotal > 0 || (s.examQuestions || []).some(function(q) { return q.type === 'short'; });
+                    return hasReviewable && s.status !== 'PUBLISHED';
+                }).length;
+                const globalCheats = this.submissions.filter(function(s) { return s.cheatCount > 0; }).length;
+                document.getElementById('badge-pending').innerText = globalPending;
+                document.getElementById('badge-cheat').innerText = globalCheats;
+
+                // Thẻ số liệu trên Dashboard cập nhật theo bộ lọc
+                const filteredPending = filteredSubs.filter(function(s) {
+                    const hasReviewable = s.essayTotal > 0 || (s.examQuestions || []).some(function(q) { return q.type === 'short'; });
+                    return hasReviewable && s.status !== 'PUBLISHED';
+                }).length;
+                const filteredCheats = filteredSubs.filter(function(s) { return s.cheatCount > 0; }).length;
+
+                document.getElementById('stat-pending').innerText = filteredPending;
+                document.getElementById('stat-cheats').innerText = filteredCheats;
+
+                this.renderItemAnalysis();
+
+                const recentBody = document.getElementById('recent-submissions-body');
+                if (filteredSubs.length === 0) {
+                    recentBody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400">Chưa có bài thi nào khớp bộ lọc.</td></tr>`;
+                    return;
+                }
+
+                recentBody.innerHTML = filteredSubs.slice(0, 12).map(function(s) {
+                    return `
                     <tr class="hover:bg-slate-50 transition">
                         <td class="py-3 px-4 font-bold text-slate-800">${Utils.escapeHTML(s.studentName)}</td>
                         <td class="py-3 px-4 text-slate-500">${Utils.escapeHTML(s.className)}</td>
@@ -1276,13 +1677,14 @@
                         <td class="py-3 px-4">${s.status === 'PUBLISHED' ? `<span class="bg-emerald-50 text-emerald-600 font-bold px-2 py-0.5 rounded text-[10px]">Đã duyệt</span>` : `<span class="text-amber-500 font-bold text-[10px]">Chờ duyệt</span>`}</td>
                         <td class="py-3 px-4">${s.cheatCount > 0 ? `<span class="bg-rose-50 text-rose-600 border border-rose-200 px-2 py-0.5 rounded font-black text-[10px]">${s.cheatCount} lần</span>` : `<span class="text-emerald-500 text-[10px]">Tốt</span>`}</td>
                         <td class="py-3 px-4 text-right text-slate-400 text-[10px]">${s.submittedAt}</td>
-                    </tr>
-                `).join('');
+                    </tr>`;
+                }).join('');
             },
 
             renderCharts() {
+                const filteredSubs = this.getFilteredSubmissions();
                 const scoreBuckets = [0, 0, 0, 0, 0];
-                this.submissions.forEach(s => {
+                filteredSubs.forEach(function(s) {
                     const sc = parseFloat(s.finalScore || s.objScore) || 0;
                     if (sc < 2) scoreBuckets[0]++;
                     else if (sc < 4) scoreBuckets[1]++;
@@ -1304,9 +1706,11 @@
                     });
                 }
 
-                const publishedCount = this.submissions.filter(s => s.status === 'PUBLISHED').length;
-                const pendingCount = this.submissions.filter(s => s.status !== 'PUBLISHED' && (s.essayTotal > 0 || (s.examQuestions || []).some(q=>q.type==='short'))).length;
-                const objectiveOnlyCount = Math.max(0, this.submissions.length - publishedCount - pendingCount);
+                const publishedCount = filteredSubs.filter(function(s) { return s.status === 'PUBLISHED'; }).length;
+                const pendingCount = filteredSubs.filter(function(s) {
+                    return s.status !== 'PUBLISHED' && (s.essayTotal > 0 || (s.examQuestions || []).some(function(q) { return q.type === 'short'; }));
+                }).length;
+                const objectiveOnlyCount = Math.max(0, filteredSubs.length - publishedCount - pendingCount);
 
                 const ctxStatus = document.getElementById('statusChart');
                 if (ctxStatus) {
@@ -1482,6 +1886,7 @@
                 this.renderRoomStatsPanel();
 
                 const tbody = document.getElementById('room-table-body');
+                if (!tbody) return;
                 if (this.database.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-slate-400">Chưa có đề thi nào trong hệ thống.</td></tr>`;
                     return;
@@ -1504,6 +1909,8 @@
                 tbody.innerHTML = filteredExams.map(exam => {
                     const normGrade = this.cleanGradeLabel(exam.grade);
                     const normSubject = this.cleanSubjectLabel(exam.subject);
+                    const cfg = this.getRoomSetting(exam.roomId);
+                    const safeRoomIdJs = String(exam.roomId || "").replace(/'/g, "\\'");
 
                     let singleCount = 0, tfCount = 0, shortCount = 0, essayCount = 0;
                     (exam.questions || []).forEach(q => {
@@ -1531,8 +1938,18 @@
                             : `<span class="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded border border-blue-100">🕒 Cập nhật: ${Utils.escapeHTML(exam._updatedAt)}</span>`)
                         : '';
 
+                    const lockBtnCls = cfg.isLocked
+                        ? 'bg-rose-600 text-white border-rose-700 hover:bg-rose-700'
+                        : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100';
+                    const attemptBtnCls = cfg.maxAttempts === 1
+                        ? 'bg-amber-500 text-white border-amber-600 hover:bg-amber-600'
+                        : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200';
+                    const hideBtnCls = cfg.hideAnswers
+                        ? 'bg-indigo-600 text-white border-indigo-700 hover:bg-indigo-700'
+                        : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200';
+
                     return `
-                    <tr class="hover:bg-slate-50/80 transition ${isRecent ? 'bg-blue-50/30' : ''}">
+                    <tr class="hover:bg-slate-50/80 transition ${cfg.isLocked ? 'bg-rose-50/40' : (isRecent ? 'bg-blue-50/30' : '')}">
                         <td class="px-6 py-4">
                             <div class="flex items-center space-x-1.5">
                                 <p class="font-mono font-black text-blue-600">${Utils.escapeHTML(exam.roomId)}</p>
@@ -1542,8 +1959,8 @@
                         </td>
                         <td class="px-6 py-4">
                             <p class="font-bold text-slate-800">${Utils.escapeHTML(exam.roomName)}</p>
-                            <div class="flex flex-wrap items-center gap-2 mt-1">
-                                <span class="text-[10px] text-slate-400 font-semibold uppercase">Loại: ${Utils.escapeHTML(exam.type || 'public')}</span>
+                            <div class="flex flex-wrap items-center mt-1">
+                                <span class="text-[10px] text-slate-400 font-semibold uppercase mr-2">Loại: ${Utils.escapeHTML(exam.type || 'public')}</span>
                                 ${updateInfo}
                             </div>
                         </td>
@@ -1558,7 +1975,12 @@
                             </div>
                         </td>
                         <td class="px-6 py-4 text-right">
-                            <button onclick="AdminEngine.copyExamJson('${exam.roomId}')" class="text-xs font-bold text-blue-600 hover:underline">Sao chép JSON</button>
+                            <div class="flex flex-wrap justify-end items-center">
+                                <button type="button" onclick="AdminEngine.toggleRoomSetting('${safeRoomIdJs}', 'isLocked')" class="mr-1.5 mb-1.5 px-2 py-1 rounded-lg border text-[10px] font-black transition ${lockBtnCls}" title="Bấm để Khóa hoặc Mở phòng thi từ xa">${cfg.isLocked ? '🔒 Đã khóa' : '🔓 Đang mở'}</button>
+                                <button type="button" onclick="AdminEngine.toggleRoomSetting('${safeRoomIdJs}', 'maxAttempts')" class="mr-1.5 mb-1.5 px-2 py-1 rounded-lg border text-[10px] font-black transition ${attemptBtnCls}" title="Chuyển giữa Thi 1 lượt duy nhất và Tự luyện nhiều lượt">${cfg.maxAttempts === 1 ? '1️⃣ 1 Lượt' : '♾️ Tự do'}</button>
+                                <button type="button" onclick="AdminEngine.toggleRoomSetting('${safeRoomIdJs}', 'hideAnswers')" class="mr-1.5 mb-1.5 px-2 py-1 rounded-lg border text-[10px] font-black transition ${hideBtnCls}" title="Ẩn hoặc Hiện đáp án & lời giải sau khi học sinh nộp bài">${cfg.hideAnswers ? '🙈 Ẩn ĐA' : '👁️ Hiện ĐA'}</button>
+                                <button type="button" onclick="AdminEngine.copyExamJson('${safeRoomIdJs}')" class="mb-1.5 px-2 py-1 text-[10px] font-bold text-blue-600 hover:underline">JSON</button>
+                            </div>
                         </td>
                     </tr>
                     `;
@@ -2433,16 +2855,142 @@
             renderBuilderPreview() {
                 const text = document.getElementById('builder-json-input').value;
                 const container = document.getElementById('builder-preview-container');
+                if (!container) return;
+
+                if (!text || !text.trim()) {
+                    container.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs font-bold">Dán mã JSON đề thi vào khung bên trái rồi bấm "Cập Nhật Xem Trước".</div>`;
+                    return;
+                }
+
                 try {
-                    const exam = JSON.parse(text);
-                    let html = `<div class="bg-white p-5 rounded-2xl shadow-sm mb-4"><h2 class="text-base font-black text-slate-800">${exam.roomName}</h2></div>`;
-                    (exam.questions || []).forEach((q, idx) => {
-                        html += `<div class="bg-white p-5 rounded-2xl shadow-sm space-y-3"><div class="flex items-center space-x-2"><span class="bg-slate-800 text-white px-2 py-0.5 rounded text-[10px] font-black uppercase">Câu ${idx + 1}</span></div><div class="text-xs font-bold">${q.q}</div></div>`;
+                    let cleanStr = text.replace(/window\.ARENA_EXAMS[\s\S]*?push\(/, '').replace(/\);\s*$/, '').trim();
+                    const exam = JSON.parse(cleanStr);
+                    const questions = Array.isArray(exam.questions) ? exam.questions : [];
+
+                    const resolveImg = function(rawUrl) {
+                        if (!rawUrl) return "";
+                        const u = String(rawUrl).trim();
+                        const m = u.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || u.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+                        return (m && m[1]) ? ("https://lh3.googleusercontent.com/d/" + m[1]) : u;
+                    };
+
+                    const warnings = [];
+                    if (!exam.roomId) warnings.push("Thiếu trường roomId (Mã phòng).");
+                    if (!exam.roomName) warnings.push("Thiếu trường roomName (Tên đề thi).");
+                    if (questions.length === 0) warnings.push("Đề thi chưa có câu hỏi nào trong mảng questions.");
+
+                    let cSingle = 0, cTf = 0, cShort = 0, cEssay = 0;
+                    questions.forEach(function(q, i) {
+                        if (!q) return;
+                        if (q.type === 'single') {
+                            cSingle++;
+                            if (!Array.isArray(q.a) || q.a.length < 2) warnings.push("Câu " + (i + 1) + ": Thiếu danh sách phương án a[].");
+                            if (q.correct === undefined || q.correct === null || q.correct === "") warnings.push("Câu " + (i + 1) + ": Thiếu đáp án đúng (correct).");
+                        } else if (q.type === 'tf') {
+                            cTf++;
+                            if (!Array.isArray(q.statements) || q.statements.length === 0) warnings.push("Câu " + (i + 1) + ": Thiếu danh sách mệnh đề statements[].");
+                            if (!Array.isArray(q.correct) || q.correct.length === 0) warnings.push("Câu " + (i + 1) + ": Thiếu mảng đáp án đúng correct[].");
+                        } else if (q.type === 'short') {
+                            cShort++;
+                            if (q.correct === undefined || q.correct === null || String(q.correct).trim() === "") warnings.push("Câu " + (i + 1) + ": Thiếu đáp án chuẩn (correct).");
+                        } else if (q.type === 'essay') {
+                            cEssay++;
+                        }
                     });
+
+                    let warnHTML = "";
+                    if (warnings.length > 0) {
+                        warnHTML = `<div class="bg-rose-50 border-2 border-rose-200 rounded-2xl p-4 text-xs text-rose-700 space-y-1">
+                            <p class="font-black uppercase tracking-wider text-[11px] mb-1">⚠️ Phát hiện ${warnings.length} lỗi cấu trúc cần kiểm tra:</p>
+                            ${warnings.slice(0, 6).map(function(w) { return `<p class="font-semibold">• ${Utils.escapeHTML(w)}</p>`; }).join('')}
+                            ${warnings.length > 6 ? `<p class="italic text-rose-500">...và ${warnings.length - 6} cảnh báo khác.</p>` : ''}
+                        </div>`;
+                    } else {
+                        warnHTML = `<div class="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2.5 text-xs font-bold text-emerald-700">✅ Cấu trúc JSON hợp lệ — Sẵn sàng đồng bộ lên Google Sheets!</div>`;
+                    }
+
+                    let html = warnHTML + `
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                            <div class="flex flex-wrap items-center justify-between mb-2">
+                                <span class="font-mono text-[11px] font-black text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200">${Utils.escapeHTML(exam.roomId || 'CHƯA CÓ MÃ')}</span>
+                                <span class="text-[11px] font-bold text-slate-500">⏱️ ${exam.durationMinutes || 0} phút • ${Utils.escapeHTML(exam.subject || '---')} • Khối ${Utils.escapeHTML(exam.grade || '---')}</span>
+                            </div>
+                            <h2 class="text-base font-black text-slate-800">${Utils.escapeHTML(exam.roomName || 'Chưa đặt tên đề')}</h2>
+                            <div class="flex flex-wrap mt-2.5 text-[10px] font-black">
+                                <span class="mr-1.5 mb-1 bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Tổng: ${questions.length} câu</span>
+                                ${cSingle > 0 ? `<span class="mr-1.5 mb-1 bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-200">${cSingle} TN</span>` : ''}
+                                ${cTf > 0 ? `<span class="mr-1.5 mb-1 bg-rose-50 text-rose-700 px-2 py-0.5 rounded border border-rose-200">${cTf} Đ/S</span>` : ''}
+                                ${cShort > 0 ? `<span class="mr-1.5 mb-1 bg-amber-50 text-amber-700 px-2 py-0.5 rounded border border-amber-200">${cShort} Ngắn</span>` : ''}
+                                ${cEssay > 0 ? `<span class="mr-1.5 mb-1 bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded border border-indigo-200">${cEssay} Tự luận</span>` : ''}
+                            </div>
+                        </div>`;
+
+                    const labels = ['A', 'B', 'C', 'D', 'E', 'F'];
+                    questions.forEach(function(q, idx) {
+                        if (!q) return;
+                        const typeMap = {
+                            single: { lbl: '4 lựa chọn', cls: 'bg-blue-50 text-blue-700 border-blue-200' },
+                            tf: { lbl: 'Đúng / Sai', cls: 'bg-rose-50 text-rose-700 border-rose-200' },
+                            short: { lbl: 'Trả lời ngắn', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
+                            essay: { lbl: 'Tự luận', cls: 'bg-indigo-50 text-indigo-700 border-indigo-200' }
+                        };
+                        const tInfo = typeMap[q.type] || { lbl: q.type || 'Khác', cls: 'bg-slate-100 text-slate-600 border-slate-200' };
+
+                        const passageHTML = q.passage ? `<div class="p-3 bg-blue-50/60 border border-blue-100 rounded-xl text-xs text-slate-700 max-h-36 overflow-y-auto custom-scrollbar"><b class="text-[10px] uppercase text-blue-700 block mb-1">📄 Ngữ cảnh:</b>${q.passage}</div>` : '';
+                        const imgHTML = q.image ? `<div class="flex justify-center bg-slate-50 p-2 rounded-xl border border-slate-200"><img src="${resolveImg(q.image)}" class="max-h-48 object-contain rounded" alt="Hình minh họa"></div>` : '';
+
+                        let bodyHTML = '';
+                        if (q.type === 'single') {
+                            const opts = Array.isArray(q.a) ? q.a : [];
+                            bodyHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">` + opts.map(function(opt, oIdx) {
+                                const isCor = String(q.correct) === String(oIdx);
+                                const optCls = isCor ? 'bg-emerald-50 border-emerald-400 text-emerald-900 font-bold' : 'bg-slate-50 border-slate-200 text-slate-700';
+                                return `<div class="p-2.5 rounded-xl border text-xs flex items-start space-x-2 ${optCls}">
+                                    <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${isCor ? 'bg-emerald-500 text-white' : 'bg-white border border-slate-300 text-slate-600'}">${labels[oIdx] || ''}</span>
+                                    <div class="flex-1 break-words">${opt}</div>
+                                    ${isCor ? `<span class="text-[10px] font-black text-emerald-700 shrink-0">✓</span>` : ''}
+                                </div>`;
+                            }).join('') + `</div>`;
+                        } else if (q.type === 'tf') {
+                            const stmts = Array.isArray(q.statements) ? q.statements : [];
+                            const cors = Array.isArray(q.correct) ? q.correct : [];
+                            bodyHTML = `<div class="border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100">` + stmts.map(function(st, sIdx) {
+                                const cVal = cors[sIdx];
+                                const badge = cVal === 'T'
+                                    ? `<span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-black text-[10px] shrink-0">ĐÚNG</span>`
+                                    : (cVal === 'F' ? `<span class="px-2 py-0.5 rounded bg-rose-100 text-rose-700 font-black text-[10px] shrink-0">SAI</span>` : `<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-400 font-bold text-[10px] shrink-0">?</span>`);
+                                return `<div class="p-2.5 bg-white flex items-center justify-between space-x-2 text-xs">
+                                    <div class="flex-1 text-slate-700"><b>${String.fromCharCode(97 + sIdx)})</b> ${st}</div>
+                                    ${badge}
+                                </div>`;
+                            }).join('') + `</div>`;
+                        } else if (q.type === 'short') {
+                            const corTxt = Array.isArray(q.correct) ? q.correct.join(' hoặc ') : String((q.correct !== undefined && q.correct !== null) ? q.correct : '').replace(/\|/g, ' hoặc ');
+                            bodyHTML = `<div class="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-bold text-emerald-800">🎯 Đáp án chuẩn: <span class="font-black">${Utils.escapeHTML(corTxt || 'Chưa có')}</span></div>`;
+                        }
+
+                        const explainHTML = q.explain ? `<div class="p-3 bg-amber-50/70 border border-amber-200 rounded-xl text-xs text-slate-700"><b class="text-[10px] uppercase text-amber-800 block mb-1">💡 Lời giải / Barem:</b>${q.explain}</div>` : '';
+
+                        html += `<div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+                            <div class="flex items-center space-x-2">
+                                <span class="bg-slate-800 text-white px-2.5 py-0.5 rounded text-[10px] font-black uppercase">Câu ${idx + 1}</span>
+                                <span class="px-2 py-0.5 rounded border text-[10px] font-black uppercase ${tInfo.cls}">${tInfo.lbl}</span>
+                                ${q.id ? `<span class="text-[10px] font-mono text-slate-400 ml-auto">ID: ${Utils.escapeHTML(q.id)}</span>` : ''}
+                            </div>
+                            ${passageHTML}
+                            <div class="text-xs font-bold text-slate-800 leading-relaxed">${q.q || '<i class="text-rose-500">Thiếu nội dung câu hỏi</i>'}</div>
+                            ${imgHTML}
+                            ${bodyHTML}
+                            ${explainHTML}
+                        </div>`;
+                    });
+
                     container.innerHTML = html;
-                    if (window.MathJax) window.MathJax.typesetPromise();
-                } catch(e) {
-                    container.innerHTML = `<div class="p-6 bg-rose-50 text-rose-700 text-xs font-mono font-bold">Lỗi cú pháp JSON.</div>`;
+                    if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+                        window.MathJax.typesetPromise([container]).catch(function() {});
+                    }
+                } catch (e) {
+                    container.innerHTML = `<div class="p-6 bg-rose-50 border-2 border-rose-200 rounded-2xl text-rose-700 text-xs font-mono font-bold">❌ Lỗi cú pháp JSON:<br><span class="font-normal mt-1 block">${Utils.escapeHTML(e.message)}</span></div>`;
                 }
             },
 
