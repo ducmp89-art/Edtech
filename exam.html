@@ -33,6 +33,38 @@
             }
         })();
     </script>
+    <!-- Polyfill ResizeObserver giúp Chart.js 3.9.1 chạy ổn định trên iOS 12 -->
+    <script>
+        if (typeof window.ResizeObserver === 'undefined') {
+            window.ResizeObserver = function(callback) {
+                this._callback = callback;
+                this._targets = [];
+                var self = this;
+                this._onResize = function() {
+                    if (!self._targets.length) return;
+                    var entries = self._targets.map(function(el) {
+                        return { target: el, contentRect: el.getBoundingClientRect() };
+                    });
+                    try { self._callback(entries, self); } catch (e) {}
+                };
+                window.addEventListener('resize', this._onResize);
+            };
+            window.ResizeObserver.prototype.observe = function(el) {
+                if (this._targets.indexOf(el) === -1) {
+                    this._targets.push(el);
+                    var self = this;
+                    setTimeout(function() { self._onResize(); }, 60);
+                }
+            };
+            window.ResizeObserver.prototype.unobserve = function(el) {
+                this._targets = this._targets.filter(function(t) { return t !== el; });
+            };
+            window.ResizeObserver.prototype.disconnect = function() {
+                this._targets = [];
+                window.removeEventListener('resize', this._onResize);
+            };
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     
@@ -669,7 +701,7 @@
             <!-- Biểu đồ Radar đánh giá kỹ năng -->
             <div id="radar-container" class="bg-white rounded-3xl p-4 mb-4 shadow-sm border border-slate-100 hidden">
                 <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Phân tích kỹ năng</p>
-                <div class="w-full max-w-[200px] mx-auto aspect-square"><canvas id="radarChart"></canvas></div>
+                <div class="w-full max-w-[200px] mx-auto relative" style="height: 200px;"><canvas id="radarChart"></canvas></div>
             </div>
 
             <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl py-4 mb-5 shadow-[0_5px_20px_rgba(79,70,229,0.3)] text-white relative overflow-hidden">
@@ -1739,6 +1771,18 @@
                                     if (typeof cloud.coins === 'number') this.studentInfo.coins = cloud.coins;
                                     if (cloud.frame) this.studentInfo.frame = cloud.frame;
                                     if (Array.isArray(cloud.unlockedFrames)) this.studentInfo.unlockedFrames = cloud.unlockedFrames;
+                                    if (cloud.mistakes) {
+                                        try {
+                                            const cloudMistakes = Array.isArray(cloud.mistakes) ? cloud.mistakes : Object.values(cloud.mistakes);
+                                            const localMistakes = JSON.parse(localStorage.getItem(`eduMasterMistakes_${pid}`) || "[]");
+                                            const mMap = new Map();
+                                            (Array.isArray(localMistakes) ? localMistakes : []).forEach(function(m) { if (m && m.q) mMap.set(m.q, m); });
+                                            cloudMistakes.forEach(function(m) { if (m && m.q && !mMap.has(m.q)) mMap.set(m.q, m); });
+                                            const mergedMistakes = Array.from(mMap.values()).slice(0, 50);
+                                            localStorage.setItem(`eduMasterMistakes_${pid}`, JSON.stringify(mergedMistakes));
+                                            this.updateMistakeBadge();
+                                        } catch (mErr) {}
+                                    }
                                     if (coinBadge) coinBadge.innerText = this.studentInfo.coins;
 
                                     this.applyFrame();
@@ -2493,33 +2537,55 @@
             },
             
             goToSubjectScreen() {
-            const nameEl = document.getElementById('student-name') || document.querySelector('input[placeholder*="HỌ VÀ TÊN"]');
-            const classEl = document.getElementById('student-class') || document.querySelector('input[placeholder*="TÊN LỚP"]');
-            const gradeEl = document.getElementById('student-grade') || document.querySelector('select');
-            const rememberChk = document.getElementById('remember-me-chk');
+                const nameEl = document.getElementById('student-name') || document.querySelector('input[placeholder*="HỌ VÀ TÊN"]');
+                const classEl = document.getElementById('student-class') || document.querySelector('input[placeholder*="TÊN LỚP"]');
+                const gradeEl = document.getElementById('student-grade') || document.querySelector('select');
+                const rememberChk = document.getElementById('remember-me-chk');
 
-            const n = (nameEl ? nameEl.value : "").trim();
-            const c = (classEl ? classEl.value : "").trim();
-            const g = gradeEl ? gradeEl.value : "Lớp 10";
-            const rememberMe = rememberChk ? rememberChk.checked : false;
+                const n = (nameEl ? nameEl.value : "").trim();
+                const c = (classEl ? classEl.value : "").trim();
+                const g = gradeEl ? gradeEl.value : "Lớp 10";
+                const rememberMe = rememberChk ? rememberChk.checked : false;
 
-            const errBox = document.getElementById('error-msg');
-            if (errBox) errBox.classList.add('hidden');
+                const errBox = document.getElementById('error-msg');
+                if (errBox) errBox.classList.add('hidden');
 
-            if ((n.toUpperCase() === "ADMIN" && c === "123456") || (n === "Quản Trị Viên" && c === "VIP PRO")) {
-                this.studentInfo.name = "Quản Trị Viên";
-                this.studentInfo.class = "VIP PRO";
+                if (!n || !c) {
+                    if (errBox) {
+                        errBox.innerText = "Vui lòng nhập đầy đủ Họ tên và Tên lớp!";
+                        errBox.classList.remove('hidden');
+                    }
+                    return;
+                }
+
+                const pid = this.getProfileId(n, c);
+                const allProfiles = JSON.parse(localStorage.getItem('eduMasterProfiles') || "{}");
+                const prof = allProfiles[pid];
+
+                if (prof) {
+                    this.studentInfo.coins = prof.coins || 0;
+                    this.studentInfo.frame = prof.frame || "frame-default";
+                    this.studentInfo.unlockedFrames = prof.unlockedFrames || ["frame-default"];
+                } else {
+                    this.studentInfo.coins = 0;
+                    this.studentInfo.frame = "frame-default";
+                    this.studentInfo.unlockedFrames = ["frame-default"];
+                }
+
+                this.studentInfo.name = n;
+                this.studentInfo.class = c;
                 this.studentInfo.grade = g;
-                this.studentInfo.coins = 99999;
-                this.studentInfo.unlockedFrames = this.shopItems.map(item => item.id);
-                this.studentInfo.frame = "frame-mythic";
-
-                if (typeof this.saveProfileMeta === 'function') this.saveProfileMeta();
-                if (typeof this.saveSession === 'function') this.saveSession();
 
                 const coinBadge = document.getElementById('coin-balance');
                 if (coinBadge) coinBadge.innerText = this.studentInfo.coins;
 
+                if (rememberMe) {
+                    if (typeof this.saveProfileMeta === 'function') this.saveProfileMeta();
+                } else {
+                    localStorage.removeItem('eduMasterLastUser');
+                }
+
+                if (typeof this.saveSession === 'function') this.saveSession();
                 this.applyFrame();
                 this.renderSubjectScreen();
 
@@ -2529,55 +2595,7 @@
                 if (subjectScreen) subjectScreen.classList.remove('hidden');
                 if (typeof this.showScreen === 'function') this.showScreen('subject-screen');
                 window.scrollTo(0, 0);
-                return;
-            }
-
-            if (!n || !c) {
-                if (errBox) {
-                    errBox.innerText = "Vui lòng nhập đầy đủ Họ tên và Tên lớp!";
-                    errBox.classList.remove('hidden');
-                }
-                return;
-            }
-
-            const pid = this.getProfileId(n, c);
-            const allProfiles = JSON.parse(localStorage.getItem('eduMasterProfiles') || "{}");
-            const prof = allProfiles[pid];
-
-            if (prof) {
-                this.studentInfo.coins = prof.coins || 0;
-                this.studentInfo.frame = prof.frame || "frame-default";
-                this.studentInfo.unlockedFrames = prof.unlockedFrames || ["frame-default"];
-            } else {
-                this.studentInfo.coins = 0;
-                this.studentInfo.frame = "frame-default";
-                this.studentInfo.unlockedFrames = ["frame-default"];
-            }
-
-            this.studentInfo.name = n;
-            this.studentInfo.class = c;
-            this.studentInfo.grade = g;
-
-            const coinBadge = document.getElementById('coin-balance');
-            if (coinBadge) coinBadge.innerText = this.studentInfo.coins;
-
-            if (rememberMe) {
-                if (typeof this.saveProfileMeta === 'function') this.saveProfileMeta();
-            } else {
-                localStorage.removeItem('eduMasterLastUser');
-            }
-
-            if (typeof this.saveSession === 'function') this.saveSession();
-            this.applyFrame();
-            this.renderSubjectScreen();
-
-            const infoScreen = document.getElementById('info-screen');
-            const subjectScreen = document.getElementById('subject-screen');
-            if (infoScreen) infoScreen.classList.add('hidden');
-            if (subjectScreen) subjectScreen.classList.remove('hidden');
-            if (typeof this.showScreen === 'function') this.showScreen('subject-screen');
-            window.scrollTo(0, 0);
-        },
+            },
             
             renderSubjectScreen() {
                 document.getElementById('display-name').innerText = this.studentInfo.name;
@@ -3209,24 +3227,42 @@
                 }
             },
 
+            syncMistakesToCloud(mistakesArr) {
+                try {
+                    const lastUser = JSON.parse(localStorage.getItem('eduMasterLastUser') || "{}");
+                    if (lastUser && lastUser.uid && window.firebase && firebase.database) {
+                        const safeList = JSON.parse(JSON.stringify((mistakesArr || []).slice(0, 50)));
+                        firebase.database().ref('users/' + lastUser.uid + '/mistakes').set(safeList);
+                    }
+                } catch (e) {}
+            },
+
             recordMistake(q) {
                 try {
                     const pid = AppCore.getProfileId(AppCore.studentInfo.name, AppCore.studentInfo.class);
                     let mistakes = JSON.parse(localStorage.getItem(`eduMasterMistakes_${pid}`) || "[]");
-                    if (!mistakes.some(m => m.q === q.q)) {
-                        mistakes.push({ ...q, status: 'unanswered', userSelected: null, spokenText: "", writtenText: "" });
+                    if (!Array.isArray(mistakes)) mistakes = [];
+                    if (!mistakes.some(m => m && m.q === q.q)) {
+                        mistakes.unshift({ ...q, status: 'unanswered', userSelected: null, spokenText: "", writtenText: "" });
+                        if (mistakes.length > 50) mistakes = mistakes.slice(0, 50);
                         localStorage.setItem(`eduMasterMistakes_${pid}`, JSON.stringify(mistakes));
+                        this.syncMistakesToCloud(mistakes);
                     }
-                } catch(e) {}
+                } catch (e) {}
             },
 
             removeMistake(q) {
                 try {
                     const pid = AppCore.getProfileId(AppCore.studentInfo.name, AppCore.studentInfo.class);
                     let mistakes = JSON.parse(localStorage.getItem(`eduMasterMistakes_${pid}`) || "[]");
-                    mistakes = mistakes.filter(m => m.q !== q.q);
-                    localStorage.setItem(`eduMasterMistakes_${pid}`, JSON.stringify(mistakes));
-                } catch(e) {}
+                    if (!Array.isArray(mistakes)) mistakes = [];
+                    const beforeLen = mistakes.length;
+                    mistakes = mistakes.filter(m => m && m.q !== q.q);
+                    if (mistakes.length !== beforeLen) {
+                        localStorage.setItem(`eduMasterMistakes_${pid}`, JSON.stringify(mistakes));
+                        this.syncMistakesToCloud(mistakes);
+                    }
+                } catch (e) {}
             },
 
             setSpd(spd) {
