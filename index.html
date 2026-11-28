@@ -274,36 +274,38 @@
         const AuthEngine = {
             async register() {
                 const name = document.getElementById('reg-name').value.trim();
-                const cls = document.getElementById('reg-class').value.trim().toUpperCase();
-                const gradeStr = document.getElementById('reg-grade').value.trim();
+                const rawCls = document.getElementById('reg-class').value.trim().toUpperCase();
+                const rawGrade = document.getElementById('reg-grade').value.trim();
                 const username = document.getElementById('reg-username').value.trim().toLowerCase();
                 const pass = document.getElementById('reg-password').value;
                 const btn = document.getElementById('btn-register');
 
-                if (!name || !cls || !gradeStr || !username || !pass) return Utils.toast("Vui lòng điền đủ thông tin!", "error");
+                if (!name || !rawCls || !rawGrade || !username || !pass) return Utils.toast("Vui lòng điền đủ thông tin!", "error");
                 if (pass.length < 6) return Utils.toast("Mật khẩu phải từ 6 ký tự!", "error");
+
+                const gradeStr = rawGrade.replace(/\D/g, '');
+                if (!gradeStr) return Utils.toast("Ô Khối vui lòng ghi số (ví dụ: 8, 10, 12)!", "error");
+
+                let cls = rawCls.replace(/^LỚP\s*/i, '').replace(/\s+/g, '');
+                if (!/^\d/.test(cls)) {
+                    cls = gradeStr + cls;
+                }
 
                 btn.innerHTML = `<span>⏳</span> <span>Đang xử lý...</span>`; btn.disabled = true;
 
                 try {
-                    // SỬA Ở ĐÂY: Tạo một UID chuẩn hóa dựa trên Tên và Lớp (giống cách exam.html và arena.html đang dùng)
-                    // Cách này đảm bảo Admin sẽ nhận diện được đúng tài khoản này sau khi tạo
                     const normalizedUid = (name + "_" + cls).toLowerCase().replace(/\s+/g, "");
-                    
-                    // Trỏ đến nhánh users bằng UID chuẩn hóa này
                     const userRef = db.ref('users/' + normalizedUid);
                     const snapshot = await userRef.once('value');
                     
                     if (snapshot.exists()) {
-                        Utils.toast("Tài khoản (Tên + Lớp) này đã tồn tại trên hệ thống!", "error");
+                        Utils.toast("Tài khoản (Tên + Lớp " + cls + ") này đã tồn tại trên hệ thống!", "error");
                         btn.innerHTML = `<span>📝</span> <span>Tạo Tài Khoản</span>`; btn.disabled = false;
                         return;
                     }
 
-                    // TÍCH HỢP: KHỞI TẠO TÀI KHOẢN VỚI TRẠNG THÁI 'pending'
-                    // TÍCH HỢP: KHỞI TẠO TÀI KHOẢN VỚI TRẠNG THÁI 'pending'
                     const newProfile = {
-                        uid: normalizedUid, // THÊM DÒNG NÀY: Ép cứng uid vào bên trong dữ liệu
+                        uid: normalizedUid,
                         name: name,
                         class: cls,
                         grade: gradeStr,
@@ -318,9 +320,8 @@
 
                     await userRef.set(newProfile);
 
-                    Utils.toast("Đăng ký thành công! Vui lòng chờ Giáo viên phê duyệt.", "success");
+                    Utils.toast("Đăng ký thành công (Lớp " + cls + ")! Vui lòng chờ Giáo viên phê duyệt.", "success");
                     
-                    // Reset form và chuyển về tab đăng nhập
                     document.getElementById('reg-name').value = '';
                     document.getElementById('reg-class').value = '';
                     document.getElementById('reg-grade').value = '';
