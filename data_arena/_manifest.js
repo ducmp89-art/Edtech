@@ -11,6 +11,7 @@ const EXAM_MANIFEST = [
     "lop_10/toan_10/toan10_gk1_de14_local.js",
     "lop_10/toan_10/toan10_hk1_de1_local.js",
     "lop_10/dialy_10/diali10_kntt_hk1_decuong_local-v2.js",
+    "lop_10/anh_10/de-cuong-on-tap-hk1-tieng-anh-10-global-success.js"
     //"lop_10/toan_10/toan_10_gk10.js",
     //"lop_8/toan_8/toan_8_gk9.js",
     //"lop_8/toan_8/toan_8_gk2.js",
